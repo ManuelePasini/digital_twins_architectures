@@ -1,0 +1,31 @@
+{
+    "id": "urn:ngsi-ld:AgriFarm:unibo:c29ee13f6e871b9588c9b3d58e43df23",
+    "type": "AgriFarm",
+    "dateCreated": "2024-09-20T14:10:23Z",
+    "dateModified": "2024-09-20T14:10:23Z",
+    "description": "A farm producing kiwis",
+    "domain": "unibo",
+    "hasAgriParcel": [
+        "urn:ngsi-ld:AgriParcel:unibo:102220a008cba90174069a0c12d5c212",
+        "urn:ngsi-ld:AgriParcel:unibo:2de48d8524fbe1867ae9b7f1979e87ad",
+        "urn:ngsi-ld:AgriParcel:unibo:647c399b2188ff484f7416389f94885c",
+    ],
+    "location": {
+        "type": "Polygon",
+        "coordinates": [
+            [
+                [11.798105, 44.234354],
+                [11.801217, 44.237683],
+                [11.805286, 44.235809],
+                [11.803987, 44.234851],
+                [11.804789, 44.233683],
+                [11.80268, 44.231419],
+                [11.798105, 44.234354],
+            ]
+        ],
+    },
+    "name": "ZESPRI AZ. AGR. DALLE FABBRICHE ANDREA",
+    "namespace": "unibo.watering.",
+    "unixtimestampCreated": 1726834224,
+    "unixtimestampModified": 1726834224,
+}
