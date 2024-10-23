@@ -11,6 +11,7 @@
     "hasDevice": [
         "urn:ngsi-ld:Device:unibo:5cf4faaf5edc8b63d1f573b2e02acc3d",
         "urn:ngsi-ld:Device:unibo:66c18326d560f8cfd92ac27919df7155",
+        "urn:ngsi-ld:Device:unibo:bc8f7461962ba09c7d9574a068c8780a"
     ],
     "irrigationSystemType": "Drip irrigation",
     "location": {
@@ -21,12 +22,12 @@
                 [11.79977, 44.235759],
                 [11.801395, 44.234782],
                 [11.80108, 44.234572],
-                [11.799569, 44.235609],
+                [11.799569, 44.235609]
             ]
-        ],
+        ]
     },
     "name": "Fondo Errano 2024 T2",
     "namespace": "unibo.watering.",
     "unixtimestampCreated": 1726834224,
-    "unixtimestampModified": 1726834224,
+    "unixtimestampModified": 1726834224
 }

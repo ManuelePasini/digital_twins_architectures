@@ -1,0 +1,21 @@
+{
+    "id": "urn:ngsi-ld:Device:unibo:f7b82d1d75e79188f5efc73c7a6d34f6",
+    "type": "Device",
+    "controlledProperty": [
+        "precipitation",
+        "temperature",
+        "humidity",
+        "solarRadiation"
+    ],
+    "belongsTo": ["urn:ngsi-ld:AgriFarm:unibo:c29ee13f6e871b9588c9b3d58e43df23"],
+    "dateCreated": "2024-10-17T07:00:02",
+    "dateObserved": "2024-10-15T12:30:02",
+    "deviceCategory": ["sensor"],
+    "domain": "unibo",
+    "location": {"type": "Point", "coordinates": [11.80164, 44.234831]},
+    "name": "Centralina Meteo Fondo Errano",
+    "namespace": "unibo.watering.meteo.",
+    "unixtimestampCreated": 1729141203,
+    "unixtimestampModified": 1728988202,
+    "value": [0, 21.85, 70.9, 525.714285714]
+}
