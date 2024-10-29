@@ -8,9 +8,10 @@
     "description": "ZESPRI AZ. AGR. DALLE FABBRICHE ANDREA Fondo Errano 2024 T1",
     "domain": "unibo",
     "hasDevice": [
-        "urn:ngsi-ld:Device:unibo:18dcacfd086f936b0eeefb315f674597",
-        "urn:ngsi-ld:Device:unibo:b249a835fe350f38d120e2b1d1e3ed0d",
-        "urn:ngsi-ld:Device:unibo:4706ab32adba82399acb21d45489535c"
+        "urn:ngsi-ld:Device:unibo:e0a35eede1bd643062e7e83011896ef2",
+        "urn:ngsi-ld:Device:unibo:4706ab32adba82399acb21d45489535c",
+        "urn:ngsi-ld:Device:unibo:a4f623ee3a7cec264df7af733c3b58e4",
+        "urn:ngsi-ld:Device:unibo:ace4b1adb69da4c71c3e02e6509e859e"
     ],
     "irrigationSystemType": "Drip irrigation",
     "location": {
