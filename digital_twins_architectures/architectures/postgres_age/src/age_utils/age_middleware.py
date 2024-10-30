@@ -4,6 +4,7 @@ import json
 import os
 import sys
 import pandas as pd
+from shapely.geometry import shape
 
 connection_manager_dir = os.path.abspath(
     os.path.join(os.path.dirname(__file__), os.path.join("..", "..", "..", ".."))
@@ -27,6 +28,7 @@ class Timescale_Age_Postgis_Middleware:
     def load_age_environment(self, graph):
         try:
             self.__pg_connector.query("CREATE EXTENSION IF NOT EXISTS age;")
+            self.__pg_connector.query("CREATE EXTENSION IF NOT EXISTS postgis;")
             self.__pg_connector.query("LOAD 'age';")
             self.__pg_connector.query('SET search_path = ag_catalog, "$user", public;')
 
@@ -59,10 +61,11 @@ class Timescale_Age_Postgis_Middleware:
         return result[0][0]  # Return wether the edge exists
 
     def check_if_node_exists(self, graph, node_label, node_id):
+        label_filter = f":{node_label}" if node_label is not None else ""
 
         check_query = f"""
             SELECT * FROM cypher('{graph}', $$
-                MATCH (n:{node_label})
+                MATCH (n{label_filter})
                 WHERE n.id = '{node_id}'
                 RETURN n
             $$) AS (n agtype);
@@ -80,18 +83,27 @@ class Timescale_Age_Postgis_Middleware:
                 "[" + ", ".join(map(lambda x: str(self.__format_value(x)), value)) + "]"
             )
         elif isinstance(value, dict):
-            return self.__format_properties(value)
+            if "type" in value and "coordinates" in value:
+                return self.__wkt_to_geom(value)
+            else:
+                return self.__format_properties(value)
         elif isinstance(value, int) or isinstance(value, float):
             return value
         else:
             return str(value)
 
+    def __wkt_to_geom(self, location):
+        return f"st_geomfromtext('{self.__json_to_wkt(location)}')"
+
     def __format_properties(self, node_properties):
         props = []
         for key, value in node_properties.items():
-            props.append(
-                f"{key}: {self.__format_value(value)}"
-            )  # Usa self.__format_value per f
+            if key == "location":
+                props.append(f"""{key}: '{self.__json_to_wkt(value)}'""")
+            else:
+                props.append(
+                    f"{key}: {self.__format_value(value)}"
+                )  # Usa self.__format_value per f
         return "{" + ", ".join(props) + "}"  # Ritorna una stringa formattata
 
     def __is_FIWARE_id(self, property_value):
@@ -113,6 +125,25 @@ class Timescale_Age_Postgis_Middleware:
     def __is_multidevice(self, node_properties):
         return node_properties["type"] == "Device" and "hasDevice" in node_properties
 
+    def __extract_edges(self, entity):
+        edges = [
+            [entity["id"], edge, dest_node]
+            for edge in self.__get_entity_edges(entity)
+            if (dest_node := entity.copy().pop(edge, None)) is not None
+        ]
+        entity_edges = pd.DataFrame(
+            edges, columns=["source_id", "edge_label", "dest_id"]
+        )
+        return entity_edges[
+            ~entity_edges["dest_id"].apply(utils.is_dict_or_list_of_dicts)
+        ]
+
+    def __json_to_wkt(self, data):
+        try:
+            return shape(data).wkt
+        except Exception as e:
+            raise ValueError(f"Unsupported geometry type: {data['type']}, error = {e}")
+
     def upload_multidevice(self, graph, node_label, node_properties):
         sub_devices = [
             sub_device
@@ -127,33 +158,56 @@ class Timescale_Age_Postgis_Middleware:
             )
 
     def insert_custom_vertex(self, graph, node_label, node_properties, is_multi=False):
-        node_properties.pop("location", None)
-        node_properties.pop("_id", None)
-        if not self.check_if_node_exists(graph, node_label, node_properties["id"]):
-            if self.__is_multidevice(node_properties) and not is_multi:
-                self.upload_multidevice(graph, node_label, node_properties)
-            else:
-                properties_str = self.__format_properties(node_properties)
-                insert_query = f"""SELECT * FROM cypher('{graph}', $$
-                    CREATE (n:{node_label} {properties_str})
-                    RETURN n
-                    $$) AS (n agtype); """
-                self.__pg_connector.query(insert_query)
-                return True
+        if self.__is_multidevice(node_properties) and not is_multi:
+            self.upload_multidevice(graph, node_label, node_properties)
         else:
-            self.__logger.info("Node already in graph")
-            return False
+            properties_str = self.__format_properties(node_properties)
+            insert_query = f"""SELECT * FROM cypher('{graph}', $$
+                CREATE (n:{node_label} {properties_str})
+                RETURN n
+                $$) AS (n agtype); """
+            result = self.__pg_connector.query(insert_query)
+            if result:
+                self.__logger.info(f"Node {node_properties['id']} successfully created")
+            else:
+                self.__logger.error(f"Could insert node {node_properties['id']}")
+
+            edges = self.__extract_edges(node_properties).itertuples(
+                index=False, name=None
+            )
+
+            return all(
+                [
+                    self.create_edges(graph, source, edge_label, dest)
+                    for (source, edge_label, dest) in edges
+                ]
+            )
 
     def create_edges(self, graph, source_id, edge_label, dest_id):
+        creation_result = True
         if isinstance(source_id, list):
-            [
-                self.create_edges(graph, source, edge_label, dest_id)
-                for source in source_id
-            ]
+            creation_result = all(
+                [
+                    self.create_edges(graph, source, edge_label, dest_id)
+                    for source in source_id
+                ]
+            )
         elif isinstance(dest_id, list):
-            [self.create_edges(graph, source_id, edge_label, dest) for dest in dest_id]
+            creation_result = creation_result and all(
+                [
+                    self.create_edges(graph, source_id, edge_label, dest)
+                    for dest in dest_id
+                ]
+            )
         else:
-            if not self.check_if_edge_exists(graph, source_id, dest_id, edge_label):
+            if not self.check_if_node_exists(
+                graph, None, source_id
+            ) or not self.check_if_node_exists(graph, None, dest_id):
+                self.__logger.error(
+                    f"Failed to create edge from {source_id} to {dest_id}, some/all nodes do not exist"
+                )
+                creation_result = False
+            elif not self.check_if_edge_exists(graph, source_id, dest_id, edge_label):
                 query = f"""
                     SELECT * FROM cypher('{graph}', $$
                         MATCH (source {{id: '{source_id}'}}), (dest {{id: '{dest_id}'}})
@@ -162,18 +216,26 @@ class Timescale_Age_Postgis_Middleware:
                     $$) AS (r agtype);
                 """
                 try:
-                    self.__pg_connector.query(query)
-                    self.__logger.info(
-                        f"Successfully created edge {edge_label} from {source_id} to {dest_id}"
+                    creation_result = len(self.__pg_connector.query(query)) > 0
+                    (
+                        self.__logger.info(
+                            f"Successfully created edge {edge_label} from {source_id} to {dest_id}"
+                        )
+                        if creation_result
+                        else self.__logger.warning(
+                            f"Failed to create edge from {source_id} to {dest_id}"
+                        )
                     )
-                    return True
+                    return creation_result
                 except Exception as e:
                     self.__logger.exception(
                         f"Failed to create edge from {source_id} to {dest_id}: {e}"
                     )
+                    creation_result = False
             else:
-                self.__logger.info("Edge already existing")
-                return True
+                self.__logger.info(f"Edge already existing between {source_id}-[{edge_label}]->{dest_id}")
+                creation_result = False
+            return creation_result
 
     def insert_test_node(self, graph):
         self.__pg_connector.query(
@@ -219,19 +281,38 @@ class Timescale_Age_Postgis_Middleware:
                     (
                         f"n.{key} = '{value}'"
                         if isinstance(value, str)
-                        else f"n.{key} = {value}"
+                        else (
+                            f"n.{key} = '{self.__json_to_wkt(value)}'"
+                            if key == "location"
+                            else (
+                                f"n.{key} = '{json.dumps(value)}'"
+                                if isinstance(value, dict)
+                                else f"n.{key} = {value}"
+                            )
+                        )
                     )
                     for key, value in node_properties.items()
                 ]
             )
-            self.__pg_connector.query(
+            result = self.__pg_connector.query(
                 f"""SELECT * FROM cypher('{graph}', $$
                 MATCH (n:{node_label} {{id: '{node_id}'}})
                 {update_string}
                 RETURN n
                 $$) AS (n agtype); """
             )
-        return True
+            if len(result) > 0:
+                self.__logger.info(f"Updated node {node_properties['id']}")
+        return self.update_edges(graph, self.__extract_edges(node_properties))
+
+    def update_edges(self, graph_name, edges):
+        new_edges = [
+            self.create_edges(
+                graph_name, row["source_id"], row["edge_label"], row["dest_id"]
+            )
+            for _, row in edges.iterrows()
+        ]
+        return all(new_edges)
 
     def update_graph(self, graph, measurement):
         device_id = measurement["id"]
@@ -250,56 +331,38 @@ class Timescale_Age_Postgis_Middleware:
 
     def upload_measurement(self, graph, hypertable, measurement):
         device_id = measurement["id"]
-        measurement.pop("location", None)
-        timestamp = datetime.fromisoformat(measurement["dateObserved"]).timestamp()
-
-        if self.update_graph(graph, measurement):
-            if self.__is_multidevice(measurement):
-                sub_devices = [
-                    sub_device
-                    for sub_device in measurement["hasDevice"]
-                    if isinstance(sub_device, dict)
-                ]
-                for subdevice in sub_devices:
-                    if "dateObserved" not in subdevice:
-                        subdevice["dateObserved"] = measurement["dateObserved"]
-                    self.upload_measurement(graph, hypertable, subdevice)
-            else:
-                for property, value in zip(
-                    measurement["controlledProperty"], measurement["value"]
+        location = measurement["location"] if "location" in measurement else None
+        timestamp = datetime.fromisoformat(measurement["dateObserved"].replace("Z", "")).timestamp()
+        if self.__is_multidevice(measurement):
+            sub_devices = [
+                sub_device
+                for sub_device in measurement["hasDevice"]
+                if isinstance(sub_device, dict)
+            ]
+            for subdevice in sub_devices:
+                if "dateObserved" not in subdevice:
+                    subdevice["dateObserved"] = measurement["dateObserved"]
+                self.upload_measurement(graph, hypertable, subdevice)
+        else:
+            for property, value in zip(
+                measurement["controlledProperty"], measurement["value"]
+            ):
+                if not self.historicize_measurement(
+                    hypertable,
+                    [
+                        timestamp,
+                        device_id,
+                        property,
+                        location if location is not None else "POINT EMPTY",
+                        value,
+                    ],
                 ):
-                    if not self.historicize_measurement(
-                        hypertable, [timestamp, device_id, property, value]
-                    ):
-                        return False
-                return True
-        return False
-
-    def update_edges(graph_name, edges):
-        return True
+                    return False
 
     def process_entity(self, entity, graph_name, measurement_table):
-        edges = [
-            [entity["id"], edge, dest_node]
-            for edge in self.__get_entity_edges(entity)
-            if (dest_node := entity.copy().pop(edge, None)) is not None
-        ]
-        entity_edges = pd.DataFrame(
-            edges, columns=["source_id", "edge_label", "dest_id"]
-        )
-        entity_edges = entity_edges[
-            ~entity_edges["dest_id"].apply(utils.is_dict_or_list_of_dicts)
-        ]
-        # If node does not exist, add to graph
+        entity.pop("_id", None)
         if self.update_graph(graph_name, entity):
-            for _, edge in edges.iterrows():
-                self.create_edges(
-                    graph_name,
-                    edge["source_id"],
-                    edge["edge_label"],
-                    edge["dest_id"],
-                )
-        else:
-            # Else, this entity is an update!
-            self.upload_measurement(graph_name, measurement_table, entity)
-            self.update_edges(graph_name, edges)
+            if entity["type"] == "Device":
+                return self.upload_measurement(graph_name, measurement_table, entity)
+            else:
+                return True

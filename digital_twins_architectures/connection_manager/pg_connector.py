@@ -30,10 +30,10 @@ class PG_Connector:
         with self.__engine.connect() as connection:
             result = connection.execute(text(query))
             connection.execute(text("COMMIT;"))
-            if result.rowcount > 0:
-                return result.fetchall()
+            if result.returns_rows:
+                return result.fetchall()  # Per SELECT
             else:
-                return []
+                return result.rowcount  # Per INSERT, UPDATE, DELETE
 
     def insert_stream(self, table: str, data: pd.DataFrame):
         queries = [
