@@ -233,8 +233,10 @@ class Timescale_Age_Postgis_Middleware:
                     )
                     creation_result = False
             else:
-                self.__logger.info(f"Edge already existing between {source_id}-[{edge_label}]->{dest_id}")
-                creation_result = False
+                self.__logger.info(
+                    f"Edge already existing between {source_id}-[{edge_label}]->{dest_id}"
+                )
+                creation_result = True
             return creation_result
 
     def insert_test_node(self, graph):
@@ -321,18 +323,27 @@ class Timescale_Age_Postgis_Middleware:
         if not self.check_if_node_exists(graph, device_type, device_id):
             return self.insert_custom_vertex(graph, device_type, measurement)
         else:
-            return self.update_node(graph, device_type, device_id, measurement)
+            return True  # self.update_node(graph, device_type, device_id, measurement)
 
     def historicize_measurement(self, hypertable, row):
-        row[0] = f"to_timestamp({row[0]})"
+        row[0] = f"to_timestamp({row[0]/1000})"
         insert_query = f"""INSERT INTO {hypertable} VALUES ({row[0]}, {", ".join(str(self.__format_value(value)) for value in row[1:])})"""
-        self.__pg_connector.query(insert_query)
-        return True
+        try:
+            self.__pg_connector.query(insert_query)
+            return True
+        except Exception as e:
+            self.__logger.exception(f"Something went wrong!! { e}")
+            return True
 
     def upload_measurement(self, graph, hypertable, measurement):
         device_id = measurement["id"]
         location = measurement["location"] if "location" in measurement else None
-        timestamp = datetime.fromisoformat(measurement["dateObserved"].replace("Z", "")).timestamp()
+        if measurement["type"] == "Device":
+            timestamp = datetime.fromisoformat(
+                measurement["dateObserved"].replace("Z", "")
+            ).timestamp()
+        else:
+            timestamp = measurement["timestamp_kafka"]
         if self.__is_multidevice(measurement):
             sub_devices = [
                 sub_device
@@ -344,17 +355,32 @@ class Timescale_Age_Postgis_Middleware:
                     subdevice["dateObserved"] = measurement["dateObserved"]
                 self.upload_measurement(graph, hypertable, subdevice)
         else:
-            for property, value in zip(
-                measurement["controlledProperty"], measurement["value"]
-            ):
+            # If its a Device, upload "controlledProperty"
+            if measurement["type"] == "Device":
+                for property, value in zip(
+                    measurement["controlledProperty"], measurement["value"]
+                ):
+                    if not self.historicize_measurement(
+                        hypertable,
+                        [
+                            timestamp,
+                            device_id,
+                            property,
+                            location if location is not None else "POINT EMPTY",
+                            value,
+                        ],
+                    ):
+                        return False
+            else:
+                # Else, I'm assuming it's a robot and pushing speed
                 if not self.historicize_measurement(
                     hypertable,
                     [
                         timestamp,
                         device_id,
-                        property,
+                        "speed",
                         location if location is not None else "POINT EMPTY",
-                        value,
+                        measurement["speed"],
                     ],
                 ):
                     return False
@@ -362,7 +388,7 @@ class Timescale_Age_Postgis_Middleware:
     def process_entity(self, entity, graph_name, measurement_table):
         entity.pop("_id", None)
         if self.update_graph(graph_name, entity):
-            if entity["type"] == "Device":
+            if entity["type"] == "Device" or entity["type"] == "AgriRobot":
                 return self.upload_measurement(graph_name, measurement_table, entity)
             else:
                 return True

@@ -56,28 +56,36 @@ graph_ts_middleware = age_middleware.Timescale_Age_Postgis_Middleware(
 try:
     graph_ts_middleware.load_age_environment(GRAPH_NAME)
 
-    agritech_connector = mongodb_connector.MongoDBConnector(AGRITECH_IP, AGRITECH_PORT)
-    agritech_connector.set_database(AGRITECH_DB_NAME)
-    agritech_connector.set_collection(AGRITECH_TASK_COLLECTION)
-    agritech_entities = agritech_connector.find()
+    # agritech_connector = mongodb_connector.MongoDBConnector(AGRITECH_IP, AGRITECH_PORT)
+    # agritech_connector.set_database(AGRITECH_DB_NAME)
+    # agritech_connector.set_collection("unibo")
+    # agritech_entities = agritech_connector.find(
+    #     query={
+    #         "$and": [
+    #             {"namespace": {"$regex": "unibo.watering"}},
+    #             {"controlledProperty": {"$ne": "dripper"}},
+    #             {"dateObserved": {"$gt": "2024-10-09T17:15:000"}},
+    #         ]
+    #     }
+    # )
 
-    for entity in agritech_entities:
-        entity.pop("_id", None)
-        graph_ts_middleware.process_entity(
-            entity, GRAPH_NAME, "ag_catalog.measurements"
-        )
-    for entity in agritech_entities:
-        entity.pop("_id", None)
-        graph_ts_middleware.process_entity(
-            entity, GRAPH_NAME, "ag_catalog.measurements"
-        )
+    # for entity in agritech_entities:
+    #     entity.pop("_id", None)
+    #     graph_ts_middleware.process_entity(entity, GRAPH_NAME, "public.measurements")
 
     # Loading Tasks from WeLaSeR
     welaser_connector = mongodb_connector.MongoDBConnector(WELASER_IP, WELASER_PORT)
     welaser_connector.set_database(WELASER_DB_NAME)
     welaser_connector.set_collection(WELASER_TASK_COLLECTION)
 
-    tasks_entities = welaser_connector.find(query={"type": "AgriRobot"}, limit=500)
+    welaser_entities = welaser_connector.find(
+        query={
+            "$and": [
+                {"type": "AgriRobot"},
+                {"timestamp_kafka": {"$gt": 1695836778675}},
+            ]
+        }
+    )
 
     agri_farm = welaser_connector.find(
         query={"id": "urn:ngsi-ld:AgriFarm:6991ac61-8db8-4a32-8fef-c462e2369055"},
@@ -85,13 +93,9 @@ try:
     )
 
     for entity in agri_farm:
-        graph_ts_middleware.process_entity(
-            entity, GRAPH_NAME, "ag_catalog.measurements"
-        )
-    for entity in tasks_entities:
-        graph_ts_middleware.process_entity(
-            entity, GRAPH_NAME, "ag_catalog.measurements"
-        )
+        graph_ts_middleware.process_entity(entity, GRAPH_NAME, "public.measurements")
+    for entity in welaser_entities:
+        graph_ts_middleware.process_entity(entity, GRAPH_NAME, "public.measurements")
 
 except Exception as e:
     logger.exception(f"Something went wrong while testing Apache Age... {e}")
