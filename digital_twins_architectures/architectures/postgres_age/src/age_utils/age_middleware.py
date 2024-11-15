@@ -22,10 +22,17 @@ class Timescale_Age_Postgis_Middleware:
         )
         self.__logger = utils.setup_logger("Timescale_Age_PostGIS_Middleware")
 
+    def __convert_to_seconds(self, timestamp):
+
+        if len(str(int(timestamp))) > 10:
+            return timestamp / 1000
+        return float(timestamp)
+
     def __commit_transactions(self):
+
         return self.__pg_connector.query("COMMIT;")
 
-    def load_age_environment(self, graph):
+    def load_age_environment(self, graph) -> bool:
         try:
             self.__pg_connector.query("CREATE EXTENSION IF NOT EXISTS age;")
             self.__pg_connector.query("CREATE EXTENSION IF NOT EXISTS postgis;")
@@ -47,7 +54,7 @@ class Timescale_Age_Postgis_Middleware:
             self.__logger.exception(e.__doc__)
             return False
 
-    def check_if_edge_exists(self, graph, source_id, dest_id, edge_label):
+    def check_if_edge_exists(self, graph, source_id, dest_id, edge_label) -> bool:
         check_query = f"""
             SELECT EXISTS (
                 SELECT * FROM cypher('{graph}', $$
@@ -60,7 +67,7 @@ class Timescale_Age_Postgis_Middleware:
         result = self.__pg_connector.query(check_query)
         return result[0][0]  # Return wether the edge exists
 
-    def check_if_node_exists(self, graph, node_label, node_id):
+    def check_if_node_exists(self, graph, node_label, node_id) -> bool:
         label_filter = f":{node_label}" if node_label is not None else ""
 
         check_query = f"""
@@ -74,9 +81,10 @@ class Timescale_Age_Postgis_Middleware:
         result = self.__pg_connector.query(check_query)
         return len(result) > 0  # Return wether the node exists
 
-    def __format_value(self, value):
-        """Restituisce la rappresentazione corretta del valore per Cypher."""
+    def __format_value(self, value) -> str:
         if isinstance(value, str):
+            if value == "NULL":
+                return value
             return f"'{value}'"
         elif isinstance(value, list):
             return (
@@ -92,10 +100,10 @@ class Timescale_Age_Postgis_Middleware:
         else:
             return str(value)
 
-    def __wkt_to_geom(self, location):
+    def __wkt_to_geom(self, location) -> str:
         return f"st_geomfromtext('{self.__json_to_wkt(location)}')"
 
-    def __format_properties(self, node_properties):
+    def __format_properties(self, node_properties) -> str:
         props = []
         for key, value in node_properties.items():
             if key == "location":
@@ -323,10 +331,11 @@ class Timescale_Age_Postgis_Middleware:
         if not self.check_if_node_exists(graph, device_type, device_id):
             return self.insert_custom_vertex(graph, device_type, measurement)
         else:
-            return True  # self.update_node(graph, device_type, device_id, measurement)
+            return True
+            #return self.update_node(graph, device_type, device_id, measurement)
 
     def historicize_measurement(self, hypertable, row):
-        row[0] = f"to_timestamp({row[0]/1000})"
+        row[0] = f"to_timestamp({self.__convert_to_seconds(row[0])})"
         insert_query = f"""INSERT INTO {hypertable} VALUES ({row[0]}, {", ".join(str(self.__format_value(value)) for value in row[1:])})"""
         try:
             self.__pg_connector.query(insert_query)
@@ -335,60 +344,55 @@ class Timescale_Age_Postgis_Middleware:
             self.__logger.exception(f"Something went wrong!! { e}")
             return True
 
-    def upload_measurement(self, graph, hypertable, measurement):
-        device_id = measurement["id"]
-        location = measurement["location"] if "location" in measurement else None
-        if measurement["type"] == "Device":
-            timestamp = datetime.fromisoformat(
-                measurement["dateObserved"].replace("Z", "")
-            ).timestamp()
-        else:
-            timestamp = measurement["timestamp_kafka"]
-        if self.__is_multidevice(measurement):
-            sub_devices = [
-                sub_device
-                for sub_device in measurement["hasDevice"]
-                if isinstance(sub_device, dict)
-            ]
-            for subdevice in sub_devices:
-                if "dateObserved" not in subdevice:
-                    subdevice["dateObserved"] = measurement["dateObserved"]
-                self.upload_measurement(graph, hypertable, subdevice)
-        else:
-            # If its a Device, upload "controlledProperty"
-            if measurement["type"] == "Device":
-                for property, value in zip(
-                    measurement["controlledProperty"], measurement["value"]
-                ):
-                    if not self.historicize_measurement(
-                        hypertable,
-                        [
-                            timestamp,
-                            device_id,
-                            property,
-                            location if location is not None else "POINT EMPTY",
-                            value,
-                        ],
-                    ):
-                        return False
-            else:
-                # Else, I'm assuming it's a robot and pushing speed
-                if not self.historicize_measurement(
+    def upload_measurement(self, hypertable, measurements: pd.DataFrame):
+        return all(
+            [
+                self.historicize_measurement(
                     hypertable,
                     [
-                        timestamp,
-                        device_id,
-                        "speed",
-                        location if location is not None else "POINT EMPTY",
-                        measurement["speed"],
+                        row["timestamp"],
+                        row["device_id"],
+                        row["controlledProperty"],
+                        row["location"],
+                        (
+                            row["value"]
+                            if isinstance(row["value"], (int, float))
+                            else "NULL"
+                        ),
+                        str(row["value"]),
                     ],
-                ):
-                    return False
+                )
+                for _, row in measurements.iterrows()
+            ]
+        )
 
-    def process_entity(self, entity, graph_name, measurement_table):
+    def process_entity(
+        self,
+        entity,
+        graph_name,
+        measurement_table,
+        measurement_schema=None,
+        extract_measurement_func=None,
+    ):
         entity.pop("_id", None)
         if self.update_graph(graph_name, entity):
-            if entity["type"] == "Device" or entity["type"] == "AgriRobot":
-                return self.upload_measurement(graph_name, measurement_table, entity)
-            else:
-                return True
+            if extract_measurement_func:
+                if self.__is_multidevice(entity):
+                    sub_devices = [
+                        sub_device
+                        for sub_device in entity["hasDevice"]
+                        if isinstance(sub_device, dict)
+                    ]
+                    for subdevice in sub_devices:
+                        if "dateObserved" not in subdevice:
+                            subdevice["dateObserved"] = entity["dateObserved"]
+                        self.upload_measurement(
+                            measurement_table,
+                            extract_measurement_func(entity, measurement_schema),
+                        )
+
+                else:
+                    return self.upload_measurement(
+                        measurement_table,
+                        extract_measurement_func(entity, measurement_schema),
+                    )

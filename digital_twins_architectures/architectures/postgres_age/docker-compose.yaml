@@ -14,7 +14,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./pg_data:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data
 
   pgadmin:
     image: dpage/pgadmin4
@@ -38,13 +38,6 @@ services:
     depends_on:
       - postgres
 
-  graphileon:
-    image: graphileon/graphileon:latest
-    container_name: graphileon
-    environment:
-      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PSW}@postgres:5432/${DB_NAME}"
-    depends_on:
-      - postgres
-    ports:
-      - "8080:3000"
-      - "8081:3001"
+volumes:
+  pgdata:
+    driver: local

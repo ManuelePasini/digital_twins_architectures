@@ -2,9 +2,11 @@ from sqlalchemy import create_engine, Table, MetaData
 import dotenv
 import os
 import sys
-from age_utils import age_middleware
+from age_utils import age_middleware, measurement_mappings
 import json
 import pandas as pd
+import psycopg2
+from psycopg2.errors import UndefinedFunction
 
 connection_manager_dir = os.path.abspath(
     os.path.join(os.path.dirname(__file__), os.path.join("..", ".."))
@@ -46,8 +48,15 @@ AGRITECH_TASK_COLLECTION = os.getenv("AGRITECH_TASK_COLLECTION")
 PG_DATABASE_URL = (
     f"postgresql+psycopg2://{PG_USER}:{PG_PSW}@{PG_HOST}:{PG_PORT}/{PG_DB_NAME}"
 )
-DATAPATH = "digital_twins_architectures/architectures/postgres_age/input_data"
 
+MEASUREMENT_TABLE_SCHEMA = [
+    "timestamp",
+    "device_id",
+    "controlledProperty",
+    "location",
+    "value",
+    "raw_value",
+]
 
 graph_ts_middleware = age_middleware.Timescale_Age_Postgis_Middleware(
     PG_HOST, PG_PORT, PG_USER, PG_PSW, PG_DB_NAME
@@ -56,46 +65,93 @@ graph_ts_middleware = age_middleware.Timescale_Age_Postgis_Middleware(
 try:
     graph_ts_middleware.load_age_environment(GRAPH_NAME)
 
-    # agritech_connector = mongodb_connector.MongoDBConnector(AGRITECH_IP, AGRITECH_PORT)
-    # agritech_connector.set_database(AGRITECH_DB_NAME)
-    # agritech_connector.set_collection("unibo")
-    # agritech_entities = agritech_connector.find(
-    #     query={
-    #         "$and": [
-    #             {"namespace": {"$regex": "unibo.watering"}},
-    #             {"controlledProperty": {"$ne": "dripper"}},
-    #             {"dateObserved": {"$gt": "2024-10-09T17:15:000"}},
-    #         ]
-    #     }
-    # )
+    agritech_connector = mongodb_connector.MongoDBConnector(AGRITECH_IP, AGRITECH_PORT)
+    agritech_connector.set_database(AGRITECH_DB_NAME)
+    agritech_connector.set_collection("unibo")
+    agritech_entities = agritech_connector.find(
+        query={"namespace": {"$regex": "unibo"}},
+    )
 
-    # for entity in agritech_entities:
-    #     entity.pop("_id", None)
-    #     graph_ts_middleware.process_entity(entity, GRAPH_NAME, "public.measurements")
+    agritech_farm = agritech_connector.find(query={"type": "AgriFarm"})
+
+    agritech_parcels = agritech_connector.find(query={"type": "AgriParcel"})
+
+    for entity in agritech_farm:
+        entity.pop("_id", None)
+        graph_ts_middleware.process_entity(
+            entity,
+            GRAPH_NAME,
+            "ag_catalog.measurements",
+            MEASUREMENT_TABLE_SCHEMA,
+            measurement_mappings.get_mapping_function(entity),
+        )
+
+    for entity in agritech_parcels:
+        entity.pop("_id", None)
+        graph_ts_middleware.process_entity(
+            entity,
+            GRAPH_NAME,
+            "ag_catalog.measurements",
+            MEASUREMENT_TABLE_SCHEMA,
+            measurement_mappings.get_mapping_function(entity),
+        )
+
+    for entity in agritech_entities:
+        entity.pop("_id", None)
+        graph_ts_middleware.process_entity(
+            entity,
+            GRAPH_NAME,
+            "ag_catalog.measurements",
+            MEASUREMENT_TABLE_SCHEMA,
+            measurement_mappings.get_mapping_function(entity),
+        )
 
     # Loading Tasks from WeLaSeR
     welaser_connector = mongodb_connector.MongoDBConnector(WELASER_IP, WELASER_PORT)
     welaser_connector.set_database(WELASER_DB_NAME)
     welaser_connector.set_collection(WELASER_TASK_COLLECTION)
 
-    welaser_entities = welaser_connector.find(
-        query={
-            "$and": [
-                {"type": "AgriRobot"},
-                {"timestamp_kafka": {"$gt": 1695836778675}},
-            ]
-        }
+    welaser_entities = welaser_connector.find(query={"type": "AgriRobot"})
+
+    welaser_agri_farm = welaser_connector.find(
+        query={"type": "AgriFarm"},
     )
 
-    agri_farm = welaser_connector.find(
-        query={"id": "urn:ngsi-ld:AgriFarm:6991ac61-8db8-4a32-8fef-c462e2369055"},
-        limit=500,
+    welaser_agri_parcel = welaser_connector.find(
+        query={"type": "AgriParcel"},
     )
 
-    for entity in agri_farm:
-        graph_ts_middleware.process_entity(entity, GRAPH_NAME, "public.measurements")
+    for entity in welaser_agri_farm:
+        graph_ts_middleware.process_entity(
+            entity,
+            GRAPH_NAME,
+            "ag_catalog.measurements",
+            MEASUREMENT_TABLE_SCHEMA,
+            measurement_mappings.get_mapping_function(entity),
+        )
+
+    for entity in welaser_agri_parcel:
+        graph_ts_middleware.process_entity(
+            entity,
+            GRAPH_NAME,
+            "ag_catalog.measurements",
+            MEASUREMENT_TABLE_SCHEMA,
+            measurement_mappings.get_mapping_function(entity),
+        )
+
     for entity in welaser_entities:
-        graph_ts_middleware.process_entity(entity, GRAPH_NAME, "public.measurements")
+        try:
+            graph_ts_middleware.process_entity(
+                entity,
+                GRAPH_NAME,
+                "ag_catalog.measurements",
+                MEASUREMENT_TABLE_SCHEMA,
+                measurement_mappings.get_mapping_function(entity),
+            )
+        except psycopg2.errors.UndefinedFunction as e:
+            logger.exception(f"Something went wrong while processing entities, {e}")
+            graph_ts_middleware.load_age_environment(GRAPH_NAME)
+
 
 except Exception as e:
     logger.exception(f"Something went wrong while testing Apache Age... {e}")
