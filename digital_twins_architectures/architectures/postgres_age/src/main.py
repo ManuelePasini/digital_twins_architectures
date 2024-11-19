@@ -90,7 +90,7 @@ try:
     agritech_farm = agritech_connector.find(query={"type": "AgriFarm"})
     agritech_parcels = agritech_connector.find(query={"type": "AgriParcel"})
     agritech_entities = agritech_connector.find(
-        query={"namespace": {"$not": {"$regex": "unibo.ndr"}}},
+        # query={"namespace": {"$not": {"$regex": "unibo.ndr"}}},
     )
 
     load_bulk_entities(agritech_farm)
