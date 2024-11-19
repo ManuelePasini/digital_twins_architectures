@@ -57,10 +57,28 @@ MEASUREMENT_TABLE_SCHEMA = [
     "value",
     "raw_value",
 ]
+MEASUREMENT_TABLE = "ag_catalog.measurements"
 
 graph_ts_middleware = age_middleware.Timescale_Age_Postgis_Middleware(
     PG_HOST, PG_PORT, PG_USER, PG_PSW, PG_DB_NAME
 )
+
+
+def load_bulk_entities(entities):
+    for entity in entities:
+        try:
+            entity.pop("_id", None)
+            graph_ts_middleware.process_entity(
+                entity,
+                GRAPH_NAME,
+                MEASUREMENT_TABLE,
+                MEASUREMENT_TABLE_SCHEMA,
+                measurement_mappings.get_mapping_function(entity),
+            )
+        except Exception as e:
+            logger.exception(f"Something went wrong while processing entities, {e}")
+            graph_ts_middleware.load_age_environment(GRAPH_NAME)
+
 
 try:
     graph_ts_middleware.load_age_environment(GRAPH_NAME)
@@ -68,43 +86,16 @@ try:
     agritech_connector = mongodb_connector.MongoDBConnector(AGRITECH_IP, AGRITECH_PORT)
     agritech_connector.set_database(AGRITECH_DB_NAME)
     agritech_connector.set_collection("unibo")
-    agritech_entities = agritech_connector.find(
-        query={"namespace": {"$regex": "unibo"}},
-    )
 
     agritech_farm = agritech_connector.find(query={"type": "AgriFarm"})
-
     agritech_parcels = agritech_connector.find(query={"type": "AgriParcel"})
+    agritech_entities = agritech_connector.find(
+        query={"namespace": {"$not": {"$regex": "unibo.ndr"}}},
+    )
 
-    for entity in agritech_farm:
-        entity.pop("_id", None)
-        graph_ts_middleware.process_entity(
-            entity,
-            GRAPH_NAME,
-            "ag_catalog.measurements",
-            MEASUREMENT_TABLE_SCHEMA,
-            measurement_mappings.get_mapping_function(entity),
-        )
-
-    for entity in agritech_parcels:
-        entity.pop("_id", None)
-        graph_ts_middleware.process_entity(
-            entity,
-            GRAPH_NAME,
-            "ag_catalog.measurements",
-            MEASUREMENT_TABLE_SCHEMA,
-            measurement_mappings.get_mapping_function(entity),
-        )
-
-    for entity in agritech_entities:
-        entity.pop("_id", None)
-        graph_ts_middleware.process_entity(
-            entity,
-            GRAPH_NAME,
-            "ag_catalog.measurements",
-            MEASUREMENT_TABLE_SCHEMA,
-            measurement_mappings.get_mapping_function(entity),
-        )
+    load_bulk_entities(agritech_farm)
+    load_bulk_entities(agritech_parcels)
+    load_bulk_entities(agritech_entities)
 
     # Loading Tasks from WeLaSeR
     welaser_connector = mongodb_connector.MongoDBConnector(WELASER_IP, WELASER_PORT)
@@ -121,36 +112,9 @@ try:
         query={"type": "AgriParcel"},
     )
 
-    for entity in welaser_agri_farm:
-        graph_ts_middleware.process_entity(
-            entity,
-            GRAPH_NAME,
-            "ag_catalog.measurements",
-            MEASUREMENT_TABLE_SCHEMA,
-            measurement_mappings.get_mapping_function(entity),
-        )
-
-    for entity in welaser_agri_parcel:
-        graph_ts_middleware.process_entity(
-            entity,
-            GRAPH_NAME,
-            "ag_catalog.measurements",
-            MEASUREMENT_TABLE_SCHEMA,
-            measurement_mappings.get_mapping_function(entity),
-        )
-
-    for entity in welaser_entities:
-        try:
-            graph_ts_middleware.process_entity(
-                entity,
-                GRAPH_NAME,
-                "ag_catalog.measurements",
-                MEASUREMENT_TABLE_SCHEMA,
-                measurement_mappings.get_mapping_function(entity),
-            )
-        except psycopg2.errors.UndefinedFunction as e:
-            logger.exception(f"Something went wrong while processing entities, {e}")
-            graph_ts_middleware.load_age_environment(GRAPH_NAME)
+    load_bulk_entities(welaser_agri_farm)
+    load_bulk_entities(welaser_agri_parcel)
+    load_bulk_entities(welaser_entities)
 
 
 except Exception as e:
