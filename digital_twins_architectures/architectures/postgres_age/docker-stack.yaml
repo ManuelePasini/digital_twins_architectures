@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  postgres:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PSW}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "${POSTGRES_PORT_EXT}:5432"
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == ${ARCH_HOSTNAME}
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_USER}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PSW}
+    ports:
+      - "${PGADMIN_PORT_EXT}:80"
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == ${ARCH_HOSTNAME}
+  
+  age_viewer:
+    image:  bitnine/agviewer:latest
+    environment:
+      AGE_ENDPOINT: "postgresql://${POSTGRES_USER}:${POSTGRES_PSW}@postgres:5432/${DB_NAME}"
+    ports:
+      - "${AGE_VIEWER_PORT_EXT}:3001"
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == ${ARCH_HOSTNAME}
