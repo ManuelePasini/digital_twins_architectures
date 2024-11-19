@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres_age_timescale:latest 
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: psw
+      POSTGRES_DB: test_postgres_graphs
+    ports:
+      - "45432:5432"
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == isi-bigcluster-pnnr-11
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.it
+      PGADMIN_DEFAULT_PASSWORD: psw
+    ports:
+      - "45050:80"
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == isi-bigcluster-pnnr-11
+  
+  age_viewer:
+    image:  bitnine/agviewer:latest
+    environment:
+      AGE_ENDPOINT: "postgresql://postgres:psw@postgres:5432/test_postgres_graphs"
+    ports:
+      - "43001:3001"
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == isi-bigcluster-pnnr-11
