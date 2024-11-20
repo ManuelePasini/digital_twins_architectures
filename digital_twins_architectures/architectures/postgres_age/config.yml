@@ -1,0 +1,2 @@
+queries_path: /benchmarker/queries.yaml
+benchmark_class: AGE_Benchmarker

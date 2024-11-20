@@ -57,7 +57,7 @@ MEASUREMENT_TABLE_SCHEMA = [
     "value",
     "raw_value",
 ]
-MEASUREMENT_TABLE = "ag_catalog.measurements"
+MEASUREMENT_TABLE = "public.measurements"
 
 graph_ts_middleware = age_middleware.Timescale_Age_Postgis_Middleware(
     PG_HOST, PG_PORT, PG_USER, PG_PSW, PG_DB_NAME
