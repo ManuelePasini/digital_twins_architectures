@@ -16,7 +16,7 @@ queries:
                   RETURN n.location
               $$) AS (location text))	
       );
-  
+
   q2:
     domain: IoT
     coverage: A -> M
@@ -34,7 +34,7 @@ queries:
     desc: Retrieves statistics (e.g., average) based on functions specifed in F during the time range [tbtb; tete].
     query: |
       SELECT device_id, AVG(value) FROM measurements 
-      WHERE controlledProperty = 'dripper'
+      WHERE controlled_property = 'dripper'
       AND timestamp BETWEEN to_timestamp(1720940203) AND  to_timestamp(1721890603)
       GROUP BY device_id;
 
@@ -112,7 +112,7 @@ queries:
     query: |
       SELECT
           device_id,
-          controlledProperty,
+          controlled_property,
           date_trunc('hour', timestamp) AS hourly,
           AVG(value) AS aggregated_value
       FROM
@@ -120,20 +120,20 @@ queries:
       WHERE value IS NOT NULL
       GROUP BY
           device_id,
-          controlledProperty,
+          controlled_property,
           hourly
       ORDER BY
           device_id,
-          controlledProperty,
+          controlled_property,
           hourly;
 
-  q9:
-    domain: Time-Series
-    coverage: E* -> A* -> M
-    desc: All sensors of a device in a farm for which value was above a threshold in a timespan.
-    query: |
-      -- This query was not provided explicitly, so here is a placeholder.
-      SELECT * FROM measurements WHERE value > 2;
+  # q9:
+  #   domain: Time-Series
+  #   coverage: E* -> A* -> M
+  #   desc: All sensors of a device in a farm for which value was above a threshold in a timespan.
+  #   query: |
+  #     -- This query was not provided explicitly, so here is a placeholder.
+  #     SELECT * FROM measurements WHERE value > 2;
 
   q10:
     domain: Time-Series
@@ -183,7 +183,7 @@ queries:
           SELECT *
           FROM cypher('watering_adf_graph', $$
               MATCH (device)-[*1..5]-(parcel:AgriParcel)-[*1..10]-(farm:AgriFarm)
-              WHERE 'soilMoisture' in device.controlledProperty
+              WHERE 'soilMoisture' in device.controlled_property
               RETURN device, parcel, farm
           $$) AS (device JSON, parcel JSON, farm JSON)
       ) AS devices_and_farms
@@ -213,7 +213,7 @@ queries:
               RETURN n
           $$) AS (n JSON)
       ) AS farms
-      ON ST_Within(m.location, ST_SetSRID(ST_GeomFromText(farms.farm -> 'properties' ->> 'location'), 4326));
+      ON ST_Within(m.location, ST_GeomFromText(farms.farm -> 'properties' ->> 'location'));
 
   q14:
     domain: DT
@@ -247,7 +247,7 @@ queries:
               RETURN parcel
           $$) AS (parcel JSON)
       ) AS parcels
-      ON ST_Within(m.location, ST_SetSRID(ST_GeomFromText(parcels.parcel -> 'properties' ->> 'location'), 4326))
+      ON ST_Within(m.location, ST_GeomFromText(parcels.parcel -> 'properties' ->> 'location'))
       WHERE m.timestamp BETWEEN to_timestamp(1720940203) AND  to_timestamp(1721890603)
       GROUP BY parcel_name
       ORDER BY parcel_name;
@@ -273,8 +273,8 @@ queries:
               RETURN farm, device
           $$) AS (farm JSON, device JSON)
       ) AS farm_parcel_device
-      ON st_within(ST_SetSRID(st_geomfromtext(farm_parcel_device.device -> 'properties' ->> 'location'), 4326), m.location)
-      WHERE m.controlledProperty = 'battery'
+      ON st_within(st_geomfromtext(farm_parcel_device.device -> 'properties' ->> 'location'), m.location)
+      WHERE m.controlled_property = 'battery'
       GROUP BY farm_name, device_name, hourly
       ORDER BY farm_name, device_name, hourly;
 
@@ -295,17 +295,17 @@ queries:
       SELECT DISTINCT device_id
       FROM measurements m
       JOIN farm_locations f
-      ON st_within(m.location, ST_SetSRID(st_geomfromtext(f.location_wkt), 4326))
-      WHERE controlledProperty = 'temperature'
+      ON st_within(m.location, st_geomfromtext(f.location_wkt))
+      WHERE controlled_property = 'temperature'
         AND m.timestamp BETWEEN to_timestamp(1720940203) AND  to_timestamp(1721890603);
 
-  q18:
-    domain: DT
-    coverage: E*
-    desc: Historical organization of a farm (parcels through time).
-    query: |
-      -- This query was not provided explicitly, so here is a placeholder.
-      SELECT * FROM farm_organization_history;
+    # q18:
+    # domain: DT
+    # coverage: E*
+    # desc: Historical organization of a farm (parcels through time).
+    # query: |
+    #   -- This query was not provided explicitly, so here is a placeholder.
+    #   SELECT * FROM farm_organization_history;
 
   q19:
     domain: DT

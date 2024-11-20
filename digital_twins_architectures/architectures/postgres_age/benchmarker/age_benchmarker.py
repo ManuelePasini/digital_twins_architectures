@@ -25,9 +25,9 @@ connection_manager_dir = os.path.abspath(
 )
 sys.path.insert(0, connection_manager_dir)
 
-import architecture_benchmarker as Architecture_Benchmarker
+from architecture_benchmarker import Architecture_Benchmarker
 from connection_manager import pg_connector
-from utils import utils
+import utils
 
 
 class AGE_Benchmarker(Architecture_Benchmarker):
@@ -72,7 +72,6 @@ class AGE_Benchmarker(Architecture_Benchmarker):
         for iteration in range(0, iterations):
             for query_index, query in queries.items():
                 query_statistics.append(
-                    self.query(test_id, query_index, query, iteration),
-                    ignore_index=True,
+                    self.query(test_id, query_index, query, iteration)
                 )
         return pd.concat(query_statistics, ignore_index=True)
