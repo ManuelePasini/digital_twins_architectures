@@ -11,6 +11,7 @@ from benchmarks.dt_benchmarker import DT_Benchmarker
 from architectures.postgres_age.benchmarker.age_benchmarker import AGE_Benchmarker
 
 statistics_column = [
+    "architecture",
     "test_id",
     "query_number",
     "iteration",
@@ -28,7 +29,7 @@ conn_dict = {
     "db_name": "test_postgres_graphs",
 }
 test_id = 0
-iterations = 1
+iterations = 10
 
 
 def test_AGE_architecture(conn_dict: dict, statistics_columns: list):

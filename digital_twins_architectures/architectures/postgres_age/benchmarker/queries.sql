@@ -113,7 +113,7 @@ ORDER BY
 -- Q9 || Time-Series ||  E* -> A* -> M
 --- All sensors of a device in a farm for which value was above a threshold in a timespan
 
--- Q10 || Time-Series ||  A -> M -> E
+-- Q10 || Time-Series ||  A -> M
 --- What is the minimum distance between places, where a device with an id from IDs1 and a device with an id from IDs2 have been?
 
 SELECT MIN(st_distance(a.location, b.location)) AS min_distance
@@ -168,7 +168,7 @@ JOIN (
 ON devices_and_farm.device -> 'properties' ->> 'id' = measurement.device_id
 ORDER BY farm_name, parcel_name, device_name;
 
--- Q13 || DT || E -> A* -> M
+-- Q13 || DT || E -> M -> A*
 --- All entities that took some measurements for each farm
 
 SELECT DISTINCT
@@ -245,8 +245,8 @@ WHERE m.controlledProperty = 'battery'
 GROUP BY farm_name, device_name, hourly
 ORDER BY farm_name, device_name, hourly;
 
--- Q17 || DT || M -> E-> A 
---- Which devices measured temperature in a farm during the period [ta, tb] 
+-- Q17 || DT || M -> E-> A
+--- Which devices measured temperature in a farm during the period [ta, tb]
 
 WITH farm_locations AS (
     SELECT DISTINCT ON (farm -> 'properties' ->> 'location') 
@@ -277,8 +277,8 @@ WITH devices AS (
         RETURN device
     $$) AS (device JSON)
 )
-SELECT DISTINCT 
-    m.device_id, 
+SELECT DISTINCT
+    m.device_id,
     environments.environment -> 'properties' ->> 'name'
 FROM measurements m
 JOIN (

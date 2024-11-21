@@ -52,13 +52,14 @@ class AGE_Benchmarker(Architecture_Benchmarker):
             return pd.DataFrame(
                 [
                     [
+                        "Apache_AGE",
                         test_id,
                         query_id,
                         iteration,
                         start_time,
                         end_time,
                         end_time - start_time,
-                        query_result is None,
+                        query_result is not None,
                     ]
                 ],
                 columns=self.statistics_columns,
@@ -70,8 +71,20 @@ class AGE_Benchmarker(Architecture_Benchmarker):
     def bulk_query(self, test_id, queries: dict, iterations: int) -> pd.DataFrame:
         query_statistics = []
         for iteration in range(0, iterations):
+            self.logger.info(f"Running query iterations {iteration}")
             for query_index, query in queries.items():
-                query_statistics.append(
-                    self.query(test_id, query_index, query, iteration)
+                self.logger.info(
+                    f"Running query {query_index} in iteration {iteration}"
                 )
+                try:
+                    query_statistics.append(
+                        self.query(test_id, query_index, query, iteration)
+                    )
+                except Exception as e:
+                    self.logger.exception(f"Something went wrong, {e}")
+                    self.logger.exception(f"Error doc, {e.__doc__}")
+                    self.load_age_environment()
+                    query_statistics.append(
+                        self.query(test_id, query_index, query, iteration)
+                    )
         return pd.concat(query_statistics, ignore_index=True)

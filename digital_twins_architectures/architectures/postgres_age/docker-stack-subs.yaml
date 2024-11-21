@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   postgres:
-    image: postgres_age_timescale:latest 
+    image: postgres_age_timescale:latest
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: psw
@@ -25,7 +25,7 @@ services:
       placement:
         constraints:
           - node.hostname == isi-bigcluster-pnnr-11
-  
+
   age_viewer:
     image:  bitnine/agviewer:latest
     environment:

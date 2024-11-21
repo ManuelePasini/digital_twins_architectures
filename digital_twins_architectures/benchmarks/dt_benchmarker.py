@@ -53,5 +53,5 @@ class DT_Benchmarker:
         queries_dict = self.load_queries(queries_path)
         output_path = self.build_output_directory(os.path.dirname(queries_path))
         statistics = benchmarker.bulk_query(test_id, queries_dict, iterations)
-        statistics.to_csv(output_path)
+        statistics.to_csv(os.path.join(output_path, "results.csv"), index=False)
         return statistics

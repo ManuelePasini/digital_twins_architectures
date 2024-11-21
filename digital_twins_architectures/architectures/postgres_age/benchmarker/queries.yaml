@@ -72,8 +72,8 @@ queries:
       FROM measurements m1
       JOIN measurements m2
           ON ST_DWithin(
-              ST_Transform(m1.location, 3857), 
-              ST_Transform(m2.location, 3857), 
+              ST_Transform(ST_SetSRID(m1.location, 4326), 3857),
+              ST_Transform(ST_SetSRID(m2.location, 4326), 3857),
               100
           )
       WHERE m1.device_id = 'urn:ngsi-ld:Device:unibo:a316ef4f55a925842cca39af7280f4d8'
@@ -176,29 +176,29 @@ queries:
     desc: Return all the devices in each farm that measure soil moisture and their average value from [ta, tb[.
     query: |
       SELECT DISTINCT device -> 'properties' ->> 'name' AS device_name, 
-             parcel -> 'properties' ->> 'name' AS parcel_name, 
-             farm -> 'properties' ->> 'name' AS farm_name,
-             meas.average_soilmoisture AS average_soilmoisture
+        parcel -> 'properties' ->> 'name' AS parcel_name, 
+        farm -> 'properties' ->> 'name' AS farm_name,
+        measurements.average_soilmoisture AS average_soilmoisture
       FROM (
-          SELECT *
-          FROM cypher('watering_adf_graph', $$
-              MATCH (device)-[*1..5]-(parcel:AgriParcel)-[*1..10]-(farm:AgriFarm)
-              WHERE 'soilMoisture' in device.controlled_property
-              RETURN device, parcel, farm
-          $$) AS (device JSON, parcel JSON, farm JSON)
+        SELECT *
+        FROM cypher('watering_adf_graph', $$
+          MATCH (device)-[*1..5]-(parcel:AgriParcel)-[*1..10]-(farm:AgriFarm)
+          WHERE 'soilMoisture' in device.controlled_property
+          RETURN device, parcel, farm
+        $$) AS (device JSON, parcel JSON, farm JSON)
       ) AS devices_and_farms
       JOIN (
-          SELECT device_id, AVG(value) AS average_soilmoisture
-          FROM measurements
-          WHERE timestamp BETWEEN to_timestamp(1720940203) AND  to_timestamp(1721890603)
-          GROUP BY device_id
+        SELECT device_id, AVG(value) AS average_soilmoisture
+        FROM measurements
+        WHERE timestamp BETWEEN to_timestamp(1720940203) AND  to_timestamp(1721890603)
+        GROUP BY device_id
       ) as measurements
-      ON devices_and_farm.device -> 'properties' ->> 'id' = measurement.device_id
+      ON devices_and_farms.device -> 'properties' ->> 'id' = measurements.device_id
       ORDER BY farm_name, parcel_name, device_name;
 
   q13:
     domain: DT
-    coverage: E -> A* -> M
+    coverage: E -> -> M -> A*
     desc: All entities that took some measurements for each farm.
     query: |
       SELECT DISTINCT
@@ -252,8 +252,6 @@ queries:
       GROUP BY parcel_name
       ORDER BY parcel_name;
 
-
-queries:
   q16:
     domain: DT
     coverage: E* -> A -> M
