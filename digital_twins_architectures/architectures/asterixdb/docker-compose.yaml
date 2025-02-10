@@ -22,39 +22,36 @@ services:
     deploy:
       placement:
         constraints:
-          - node.role == manager
           - node.hostname == area40cl5
     networks:
       - BIG-dataplatform-network 
 
   asterix_nc1:
     image: mp4sini/asterixdb:latest
-    ports:
-      - 1099:1099
-      - 9090:9090
+    #ports:
+      #- 1099:1099
+      #- 9090:9090
     volumes:
       - /home/mpasini/asterix_conf_files/:/workspace/asterixdb/asterixdb/asterix-server/target/asterix-server-0.9.10-SNAPSHOT-binary-assembly/apache-asterixdb-0.9.10-SNAPSHOT/opt/local/conf
     command: bin/asterixncservice > red-service.log 2>&1 &
     deploy:
       placement:
         constraints:
-          - node.role == manager
           - node.hostname == area40cl2
     networks:
       - BIG-dataplatform-network 
 
   asterix_nc2:
     image: mp4sini/asterixdb:latest
-    ports:
-      - 1099:1099
-      - 9090:9090
+    #ports:
+      #- 1099:1099
+      #- 9090:9090
     volumes:
       - /home/mpasini/asterix_conf_files/:/workspace/asterixdb/asterixdb/asterix-server/target/asterix-server-0.9.10-SNAPSHOT-binary-assembly/apache-asterixdb-0.9.10-SNAPSHOT/opt/local/conf
     command: bin/asterixncservice > blue-service.log 2>&1 &
     deploy:
       placement:
         constraints:
-          - node.role == manager
           - node.hostname == area40cl3
     networks:
       - BIG-dataplatform-network 
