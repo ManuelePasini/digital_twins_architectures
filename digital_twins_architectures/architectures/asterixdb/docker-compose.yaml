@@ -23,7 +23,7 @@ services:
       placement:
         constraints:
           - node.role == manager
-          - node.hostname != CB-Mass-Node1
+          - node.hostname == area40cl5
     networks:
       - BIG-dataplatform-network 
 
@@ -39,7 +39,7 @@ services:
       placement:
         constraints:
           - node.role == manager
-          - node.hostname != CB-Mass-Node1
+          - node.hostname == area40cl2
     networks:
       - BIG-dataplatform-network 
 
@@ -55,7 +55,7 @@ services:
       placement:
         constraints:
           - node.role == manager
-          - node.hostname != CB-Mass-Node1
+          - node.hostname == area40cl3
     networks:
       - BIG-dataplatform-network 
 
