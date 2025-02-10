@@ -12,8 +12,12 @@ services:
 
     volumes:
       - /home/mpasini/asterix_conf_files:${CCCONFDIR}
-
-    command: tail -f /dev/null
+    command:
+      - /bin/bash
+      - -c
+      - |
+        sleep 40
+        bin/asterixcc -config-file cc.conf > cc.log 2>&1 &
     deploy:
       placement:
         constraints:
@@ -29,7 +33,7 @@ services:
       - 9090:9090
     volumes:
       - /home/mpasini/asterix_conf_files:${CCCONFDIR}
-    command:
+    command: bin/asterixncservice > red-service.log 2>&1 &
     deploy:
       placement:
         constraints:
@@ -45,7 +49,7 @@ services:
       - 9090:9090
     volumes:
       - /home/mpasini/asterix_conf_files:${CCCONFDIR}
-    command:
+    command: bin/asterixncservice > blue-service.log 2>&1 &
     deploy:
       placement:
         constraints:
