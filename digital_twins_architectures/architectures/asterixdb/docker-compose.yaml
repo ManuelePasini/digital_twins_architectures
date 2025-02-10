@@ -7,15 +7,15 @@ services:
     # volumes:
     #   - namenode1_data:${NAMEDIR}
     #   - namenode1_config:${HADOOPCONFDIR}
-    command:
+    command: tail -f /dev/null
     deploy:
       placement:
         constraints:
           - node.role == manager
           - node.hostname != CB-Mass-Node1
   #        - node.labels.running_asterix_cc==0
-    networks:
-      - BIG-dataplatform-network 
+  # networks:
+  #    - BIG-dataplatform-network 
 
   # asterix_nc1:
   #   image: mp4sini/asterixdb:latest
@@ -29,7 +29,7 @@ services:
   #     placement:
   #       constraints:
   #         - node.role == manager
-  #         - node.hostname != CB-Mass-Node1
+  #         - node.hostname != CB-Mass-Node1di
   #         - node.labels.running_asterix_cc==0
   #   networks:
   #     - BIG-dataplatform-network 
