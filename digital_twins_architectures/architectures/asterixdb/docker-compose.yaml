@@ -4,52 +4,55 @@ services:
     image: mp4sini/asterixdb:latest
     ports:
       - 19006:19006
-    # volumes:
-    #   - namenode1_data:${NAMEDIR}
-    #   - namenode1_config:${HADOOPCONFDIR}
+      - 19001:19001
+      - 19002:19002
+      - 19003:19003
+      - 1009:1009
+      - 1098:1098
+
+    volumes:
+      - /home/mpasini/asterix_conf_files:${CCCONFDIR}
+
     command: tail -f /dev/null
     deploy:
       placement:
         constraints:
           - node.role == manager
           - node.hostname != CB-Mass-Node1
-  #        - node.labels.running_asterix_cc==0
-  # networks:
-  #    - BIG-dataplatform-network 
+  networks:
+     - BIG-dataplatform-network 
 
-  # asterix_nc1:
-  #   image: mp4sini/asterixdb:latest
-  #   ports:
-  #     - ${NAMENODE1PORT}:${NAMENODE1PORT}
-  #   volumes:
-  #     - namenode1_data:${NAMEDIR}
-  #     - namenode1_config:${HADOOPCONFDIR}
-  #   command:
-  #   deploy:
-  #     placement:
-  #       constraints:
-  #         - node.role == manager
-  #         - node.hostname != CB-Mass-Node1di
-  #         - node.labels.running_asterix_cc==0
-  #   networks:
-  #     - BIG-dataplatform-network 
+  asterix_nc1:
+    image: mp4sini/asterixdb:latest
+    ports:
+      - 1099:1099
+      - 9090:9090
+    volumes:
+      - /home/mpasini/asterix_conf_files:${CCCONFDIR}
+    command:
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+          - node.hostname != CB-Mass-Node1
+    networks:
+      - BIG-dataplatform-network 
 
-  # asterix_nc2:
-  #   image: mp4sini/asterixdb:latest
-  #   ports:
-  #     - ${NAMENODE1PORT}:${NAMENODE1PORT}
-  #   volumes:
-  #     - namenode1_data:${NAMEDIR}
-  #     - namenode1_config:${HADOOPCONFDIR}
-  #   command:
-  #   deploy:
-  #     placement:
-  #       constraints:
-  #         - node.role == manager
-  #         - node.hostname != CB-Mass-Node1
-  #         - node.labels.running_asterix_cc==0
-  #   networks:
-  #     - BIG-dataplatform-network 
+  asterix_nc2:
+    image: mp4sini/asterixdb:latest
+    ports:
+      - 1099:1099
+      - 9090:9090
+    volumes:
+      - /home/mpasini/asterix_conf_files:${CCCONFDIR}
+    command:
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+          - node.hostname != CB-Mass-Node1
+    networks:
+      - BIG-dataplatform-network 
 
 
 volumes:
