@@ -5,3 +5,4 @@ pandas==2.2.3
 pymongo==4.10.1
 shapely==2.0.6
 pyyaml==6.0.2
+requests==2.26.0

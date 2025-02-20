@@ -49,14 +49,7 @@ PG_DATABASE_URL = (
     f"postgresql+psycopg2://{PG_USER}:{PG_PSW}@{PG_HOST}:{PG_PORT}/{PG_DB_NAME}"
 )
 
-MEASUREMENT_TABLE_SCHEMA = [
-    "timestamp",
-    "device_id",
-    "controlledProperty",
-    "location",
-    "value",
-    "raw_value",
-]
+MEASUREMENT_TABLE_SCHEMA = os.getenv("MEASUREMENT_TABLE_SCHEMA")
 MEASUREMENT_TABLE = "public.measurements"
 
 graph_ts_middleware = age_middleware.Timescale_Age_Postgis_Middleware(

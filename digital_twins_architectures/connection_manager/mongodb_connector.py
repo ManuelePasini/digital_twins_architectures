@@ -74,12 +74,11 @@ class MongoDBConnector:
         else:
             return self.get_collection(db_name, collection_name).insert_one(data)
 
-    def find(self, db_name=None, collection_name=None, query=None, limit=None):
-        result = self.get_collection(db_name, collection_name).find(query or {})
-        if limit is not None:
-            return list(result.limit(limit))
-        else:
-            return list(result)
+    def find(self, db_name=None, collection_name=None, query=None, limit=sys.maxsize):
+        result = (
+            self.get_collection(db_name, collection_name).find(query or {}).limit(limit)
+        )
+        return list(result)
 
     def count_documents(self, db_name=None, collection_name=None, query=None):
         return self.get_collection(db_name, collection_name).count_documents(
