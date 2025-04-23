@@ -2,13 +2,16 @@ version: '3.8'
 
 services:
   postgres:
-    image: postgres_age_timescale:latest
+    image: 127.0.0.0:5000/postgres_age_timescale:v0.0.1
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: psw
       POSTGRES_DB: test_postgres_graphs
     ports:
       - "45432:5432"
+    volumes:
+      - /pgdata:/home/postgres/pgdata
+      - /agedata:/home/postgres/age
     deploy:
       placement:
         constraints:
