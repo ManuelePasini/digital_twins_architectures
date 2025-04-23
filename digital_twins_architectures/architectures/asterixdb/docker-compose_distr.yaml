@@ -1,0 +1,70 @@
+version: "3.9"
+services:
+  asterix_cc:
+    image: mp4sini/asterixdb:latest
+    ports:
+      - 19006:19006
+      - 19001:19001
+      - 19002:19002
+      - 19003:19003
+      - 1009:1009
+      - 1098:1098
+
+    volumes:
+      - /home/mpasini/asterix_conf_files/:/workspace/asterixdb/asterixdb/asterix-server/target/asterix-server-0.9.10-SNAPSHOT-binary-assembly/apache-asterixdb-0.9.10-SNAPSHOT/opt/local/conf
+
+    command:
+        - /bin/bash
+        - -c
+        - |
+          sleep 20
+          bin/asterixcc -config-file opt/local/conf/cc.conf > cc.log 2>&1 &
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == area40cl2
+    networks:
+      - BIG-dataplatform-network 
+
+  asterix_nc1:
+    image: mp4sini/asterixdb:latest
+    #ports:
+      #- 1099:1099
+      #- 9090:9090
+    volumes:
+      - /home/mpasini/asterix_conf_files/:/workspace/asterixdb/asterixdb/asterix-server/target/asterix-server-0.9.10-SNAPSHOT-binary-assembly/apache-asterixdb-0.9.10-SNAPSHOT/opt/local/conf
+    command: red-service.log 2>&1 &
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == area40cl3
+    networks:
+      - BIG-dataplatform-network 
+
+  asterix_nc2:
+    image: mp4sini/asterixdb:latest
+    #ports:
+      #- 1099:1099
+      #- 9090:9090
+    volumes:
+      - /home/mpasini/asterix_conf_files/:/workspace/asterixdb/asterixdb/asterix-server/target/asterix-server-0.9.10-SNAPSHOT-binary-assembly/apache-asterixdb-0.9.10-SNAPSHOT/opt/local/conf
+    command: tail -f /dev/null
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == area40cl3
+    networks:
+      - BIG-dataplatform-network 
+
+
+volumes:
+  namenode1_config:
+    driver_opts:
+      type: nfs
+      o: addr=${NFSADDRESS},rw,nfsvers=4
+      device: :${NFSPATH}/
+    
+networks:
+  BIG-dataplatform-network:
+    external: true
+    name: BIG-dataplatform-network

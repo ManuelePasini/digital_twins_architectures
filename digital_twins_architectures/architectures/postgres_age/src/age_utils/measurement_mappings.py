@@ -20,7 +20,6 @@ def device(device, measurement_schema):
         ]
         measurements_list.append(new_row)
 
-    # Ora concatenare tutte le righe in un DataFrame
     measurements = pd.DataFrame(measurements_list, columns=measurement_schema)
     return measurements
 

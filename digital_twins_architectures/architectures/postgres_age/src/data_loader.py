@@ -65,7 +65,7 @@ def load_bulk_entities(entities):
                 entity,
                 GRAPH_NAME,
                 MEASUREMENT_TABLE,
-                MEASUREMENT_TABLE_SCHEMA,
+                json.loads(MEASUREMENT_TABLE_SCHEMA),
                 measurement_mappings.get_mapping_function(entity),
             )
         except Exception as e:
@@ -83,7 +83,7 @@ try:
     agritech_farm = agritech_connector.find(query={"type": "AgriFarm"})
     agritech_parcels = agritech_connector.find(query={"type": "AgriParcel"})
     agritech_entities = agritech_connector.find(
-        # query={"namespace": {"$not": {"$regex": "unibo.ndr"}}},
+        query={"namespace": {"$not": {"$regex": "ndr"}}},
     )
 
     load_bulk_entities(agritech_farm)

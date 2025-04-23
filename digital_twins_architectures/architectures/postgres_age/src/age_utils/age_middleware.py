@@ -331,8 +331,7 @@ class Timescale_Age_Postgis_Middleware:
         if not self.check_if_node_exists(graph, device_type, device_id):
             return self.insert_custom_vertex(graph, device_type, measurement)
         else:
-            return True
-            # return self.update_node(graph, device_type, device_id, measurement)
+            return self.update_node(graph, device_type, device_id, measurement)
 
     def historicize_measurement(self, hypertable, row):
         row[0] = f"to_timestamp({self.__convert_to_seconds(row[0])})"

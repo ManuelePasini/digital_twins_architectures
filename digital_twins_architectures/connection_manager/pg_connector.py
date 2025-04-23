@@ -1,12 +1,11 @@
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine.base import Engine
-import utils
 import pandas as pd
 import os, sys
 
-# utils_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.join("..")))
-# sys.path.insert(0, utils_dir)
-# from utils import utils
+utils_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.join("..")))
+sys.path.insert(0, utils_dir)
+from utils import utils
 
 
 class PG_Connector:
