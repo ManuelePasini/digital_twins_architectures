@@ -1,0 +1,19 @@
+version: "3.9"
+services:
+  aeong:
+    image: hououou/aeong:v1
+    hostname: asterixdb
+    container_name: asterixdb
+    command:
+      - /bin/bash
+      - -c
+      - |
+        aeong
+        tail -f /dev/null
+    ports:
+      - 7687:7687
+      - 7444:7444
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == area40cl2
