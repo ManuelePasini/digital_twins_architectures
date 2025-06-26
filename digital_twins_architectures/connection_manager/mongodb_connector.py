@@ -75,6 +75,8 @@ class MongoDBConnector:
             return self.get_collection(db_name, collection_name).insert_one(data)
 
     def find(self, db_name=None, collection_name=None, query=None, limit=sys.maxsize):
+        if query is None:
+            self.get_collection(db_name, collection_name).distinct("id")
         result = (
             self.get_collection(db_name, collection_name).find(query or {}).limit(limit)
         )

@@ -7,6 +7,7 @@ import json
 import pandas as pd
 import psycopg2
 from psycopg2.errors import UndefinedFunction
+from time import sleep
 
 connection_manager_dir = os.path.abspath(
     os.path.join(os.path.dirname(__file__), os.path.join("..", ".."))
@@ -68,6 +69,7 @@ def load_bulk_entities(entities):
                 json.loads(MEASUREMENT_TABLE_SCHEMA),
                 measurement_mappings.get_mapping_function(entity),
             )
+            sleep(0.05)
         except Exception as e:
             logger.exception(f"Something went wrong while processing entities, {e}")
             graph_ts_middleware.load_age_environment(GRAPH_NAME)
@@ -77,37 +79,38 @@ try:
     graph_ts_middleware.load_age_environment(GRAPH_NAME)
 
     agritech_connector = mongodb_connector.MongoDBConnector(AGRITECH_IP, AGRITECH_PORT)
-    agritech_connector.set_database(AGRITECH_DB_NAME)
-    agritech_connector.set_collection("unibo")
+    agritech_connector.set_database("currentState")
+    for collection in ["entities"]:
+        agritech_connector.set_collection(collection)
 
-    agritech_farm = agritech_connector.find(query={"type": "AgriFarm"})
-    agritech_parcels = agritech_connector.find(query={"type": "AgriParcel"})
-    agritech_entities = agritech_connector.find(
-        query={"namespace": {"$not": {"$regex": "ndr"}}},
-    )
+        entities = agritech_connector.find()
+        load_bulk_entities(entities)
 
-    load_bulk_entities(agritech_farm)
-    load_bulk_entities(agritech_parcels)
-    load_bulk_entities(agritech_entities)
+    # load_bulk_entities(agritech_parcels)
+    # load_bulk_entities(agritech_entities)
 
     # Loading Tasks from WeLaSeR
-    welaser_connector = mongodb_connector.MongoDBConnector(WELASER_IP, WELASER_PORT)
-    welaser_connector.set_database(WELASER_DB_NAME)
-    welaser_connector.set_collection(WELASER_TASK_COLLECTION)
+    # welaser_connector = mongodb_connector.MongoDBConnector(WELASER_IP, WELASER_PORT)
+    # welaser_connector.set_database(WELASER_DB_NAME)
+    # welaser_connector.set_collection(WELASER_TASK_COLLECTION)
 
-    welaser_entities = welaser_connector.find(query={"type": "AgriRobot"})
+    # welaser_entities = welaser_connector.find(
+    #     query={
+    #         "id": "urn:ngsi-ld:AgriRobot:9ea60389-9246-4dda-a083-3e3bcb444131",
+    #         "timestamp_kafka": {"$gte": 1690888828000},
+    #     }
+    # )
 
-    welaser_agri_farm = welaser_connector.find(
-        query={"type": "AgriFarm"},
-    )
+    # welaser_agri_farm = welaser_connector.find(
+    #     query={"type": "AgriFarm"},
+    # )
 
-    welaser_agri_parcel = welaser_connector.find(
-        query={"type": "AgriParcel"},
-    )
-
-    load_bulk_entities(welaser_agri_farm)
-    load_bulk_entities(welaser_agri_parcel)
-    load_bulk_entities(welaser_entities)
+    # welaser_agri_parcel = welaser_connector.find(
+    #     query={"type": "AgriParcel"},
+    # )
+    # load_bulk_entities(welaser_agri_farm)
+    # load_bulk_entities(welaser_agri_parcel)
+    # load_bulk_entities(welaser_entities)
 
 
 except Exception as e:

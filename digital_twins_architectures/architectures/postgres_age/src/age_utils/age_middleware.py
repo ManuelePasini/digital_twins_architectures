@@ -275,44 +275,44 @@ class Timescale_Age_Postgis_Middleware:
             self.update_node(graph, subdevice["type"], subdevice["id"], subdevice)
 
     def update_node(self, graph, node_label, node_id, node_properties):
-        if self.__is_multidevice(node_properties):
-            self.update_subdevices(graph, node_properties)
-            has_device_prop = json.dumps(node_properties["hasDevice"])
-            self.__pg_connector.query(
-                f"""SELECT * FROM cypher('{graph}', $$
-                MATCH (n:{node_label} {{id: '{node_id}'}})
-                SET n.hasDevice = '{has_device_prop}'
-                RETURN n
-                $$) AS (n agtype); """
-            )
-        else:
-            update_string = "SET " + ", ".join(
-                [
-                    (
-                        f"n.{key} = '{value}'"
-                        if isinstance(value, str)
-                        else (
-                            f"n.{key} = '{self.__json_to_wkt(value)}'"
-                            if key == "location"
-                            else (
-                                f"n.{key} = '{json.dumps(value)}'"
-                                if isinstance(value, dict)
-                                else f"n.{key} = {value}"
-                            )
-                        )
-                    )
-                    for key, value in node_properties.items()
-                ]
-            )
-            result = self.__pg_connector.query(
-                f"""SELECT * FROM cypher('{graph}', $$
-                MATCH (n:{node_label} {{id: '{node_id}'}})
-                {update_string}
-                RETURN n
-                $$) AS (n agtype); """
-            )
-            if len(result) > 0:
-                self.__logger.info(f"Updated node {node_properties['id']}")
+        # if self.__is_multidevice(node_properties):
+        #     self.update_subdevices(graph, node_properties)
+        #     has_device_prop = json.dumps(node_properties["hasDevice"])
+        #     self.__pg_connector.query(
+        #         f"""SELECT * FROM cypher('{graph}', $$
+        #         MATCH (n:{node_label} {{id: '{node_id}'}})
+        #         SET n.hasDevice = '{has_device_prop}'
+        #         RETURN n
+        #         $$) AS (n agtype); """
+        #     )
+        # else:
+        #     update_string = "SET " + ", ".join(
+        #         [
+        #             (
+        #                 f"n.{key} = '{value}'"
+        #                 if isinstance(value, str)
+        #                 else (
+        #                     f"n.{key} = '{self.__json_to_wkt(value)}'"
+        #                     if key == "location"
+        #                     else (
+        #                         f"n.{key} = '{json.dumps(value)}'"
+        #                         if isinstance(value, dict)
+        #                         else f"n.{key} = {value}"
+        #                     )
+        #                 )
+        #             )
+        #             for key, value in node_properties.items()
+        #         ]
+        #     )
+        #     result = self.__pg_connector.query(
+        #         f"""SELECT * FROM cypher('{graph}', $$
+        #         MATCH (n:{node_label} {{id: '{node_id}'}})
+        #         {update_string}
+        #         RETURN n
+        #         $$) AS (n agtype); """
+        #     )
+        #     if len(result) > 0:
+        #         self.__logger.info(f"Updated node {node_properties['id']}")
         return self.update_edges(graph, self.__extract_edges(node_properties))
 
     def update_edges(self, graph_name, edges):
@@ -331,7 +331,8 @@ class Timescale_Age_Postgis_Middleware:
         if not self.check_if_node_exists(graph, device_type, device_id):
             return self.insert_custom_vertex(graph, device_type, measurement)
         else:
-            return self.update_node(graph, device_type, device_id, measurement)
+            # return True
+            self.update_node(graph, device_type, device_id, measurement)
 
     def historicize_measurement(self, hypertable, row):
         row[0] = f"to_timestamp({self.__convert_to_seconds(row[0])})"
@@ -375,23 +376,24 @@ class Timescale_Age_Postgis_Middleware:
     ):
         entity.pop("_id", None)
         if self.update_graph(graph_name, entity):
-            if extract_measurement_func:
-                if self.__is_multidevice(entity):
-                    sub_devices = [
-                        sub_device
-                        for sub_device in entity["hasDevice"]
-                        if isinstance(sub_device, dict)
-                    ]
-                    for subdevice in sub_devices:
-                        if "dateObserved" not in subdevice:
-                            subdevice["dateObserved"] = entity["dateObserved"]
-                        self.upload_measurement(
-                            measurement_table,
-                            extract_measurement_func(entity, measurement_schema),
-                        )
+            # if extract_measurement_func:
+            #     if self.__is_multidevice(entity):
+            #         sub_devices = [
+            #             sub_device
+            #             for sub_device in entity["hasDevice"]
+            #             if isinstance(sub_device, dict)
+            #         ]
+            #         for subdevice in sub_devices:
+            #             if "dateObserved" not in subdevice:
+            #                 subdevice["dateObserved"] = entity["dateObserved"]
+            #             self.upload_measurement(
+            #                 measurement_table,
+            #                 extract_measurement_func(entity, measurement_schema),
+            #             )
 
-                else:
-                    return self.upload_measurement(
-                        measurement_table,
-                        extract_measurement_func(entity, measurement_schema),
-                    )
+            #     else:
+            #         return self.upload_measurement(
+            #             measurement_table,
+            #             extract_measurement_func(entity, measurement_schema),
+            #         )
+            print("hello")

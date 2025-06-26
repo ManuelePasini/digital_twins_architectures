@@ -1,15 +1,13 @@
 version: "3.9"
 services:
   aeong:
-    image: hououou/aeong:v1
-    hostname: asterixdb
-    container_name: asterixdb
+    image: mpasini/aeong:latest
     command:
       - /bin/bash
       - -c
       - |
-        aeong
-        tail -f /dev/null
+        cd build
+        ./memgraph
     ports:
       - 7687:7687
       - 7444:7444
