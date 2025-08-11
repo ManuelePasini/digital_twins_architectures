@@ -1,0 +1,13 @@
+version: "3.9"
+services:
+  aeong:
+    image: mp4sini/aeong:latest
+    tty: true
+    stdin_open: true
+    volumes:
+      - ./query_results:/home/AeonG/tests/results/query_results
+    command:
+      - /bin/bash
+      - -c
+      - |
+        ./tests/experiments/t_smartbench_test.sh
