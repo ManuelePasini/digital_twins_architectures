@@ -1,0 +1,2 @@
+{"count":1,"duration":21.460782994749998,"metadata":{"cost_estimate":{"average":52476.981328125,"maximum":52476.981328125,"minimum":52476.981328125},"parsing_time":{"average":0.006912246,"maximum":0.006912246,"minimum":0.006912246},"plan_execution_time":{"average":85.820363998,"maximum":85.820363998,"minimum":85.820363998},"planning_time":{"average":0.001239811,"maximum":0.001239811,"minimum":0.001239811}},"num_workers":4,"retries":0,"throughput":0.04659662232476011}
+{"count":0,"duration":6.547500000000001e-07,"metadata":{},"num_workers":4,"retries":0,"throughput":0.0}

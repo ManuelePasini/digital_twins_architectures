@@ -10,4 +10,4 @@ services:
       - /bin/bash
       - -c
       - |
-        ./tests/experiments/t_smartbench_test.sh
+        tail -f /dev/null 

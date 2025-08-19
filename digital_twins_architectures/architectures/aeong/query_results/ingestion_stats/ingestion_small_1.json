@@ -1,0 +1,14 @@
+{
+    "graph_op_latency": "Create
+14408.00767153",
+    "storage_consumption": "original
+582.7952451705933",
+    "start_time": "database
+1755087376501900",
+    "end_time": "time:
+1755101788364661",
+    "dataset_size": "small",
+    "iteration": "1",
+    "duration": 1755101788364661
+1755087376501900
+    }
