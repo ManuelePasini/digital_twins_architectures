@@ -1,4 +1,6 @@
 from hygraph_core import HyGraph, HyGraphQuery
+import pandas as pd
+
       # Initialize HyGraph
     hygraph = HyGraph()
 
