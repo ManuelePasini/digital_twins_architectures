@@ -12,21 +12,20 @@ services:
         - /bin/bash
         - -c
         - |
-          sleep 20
-          bin/asterixcc -config-file /workspace/asterixdb/asterixdb/asterix-server/target/asterix-server-0.9.10-SNAPSHOT-binary-assembly/apache-asterixdb-0.9.10-SNAPSHOT/opt/local/conf/cc.conf > cc.log 2>&1 &
-          tail -f cc.log
+          tail -f /dev/null
+          #sleep 40
+          #bin/asterixcc -config-file /workspace/asterixdb/asterixdb/asterix-server/target/asterix-server-0.9.10-SNAPSHOT-binary-assembly/apache-asterixdb-0.9.10-SNAPSHOT/opt/local/conf/cc.conf > cc.log 2>&1 &
+          # tail -f cc.log
     deploy:
       placement:
         constraints:
-          - node.hostname == area40cl5
+          - node.hostname == area40cl2
     networks:
       - BIG-dataplatform-network
 
 
   asterix_nc1:
     image: mp4sini/asterixdb:latest
-    volumes:
-      - /home/mpasini/asterix_conf_files/:/workspace/asterixdb/asterixdb/asterix-server/target/asterix-server-0.9.10-SNAPSHOT-binary-assembly/apache-asterixdb-0.9.10-SNAPSHOT/opt/local/conf
     command:
         - /bin/bash
         - -c
@@ -36,15 +35,13 @@ services:
     deploy:
       placement:
         constraints:
-          - node.hostname == area40cl2
+          - node.hostname == area40cl6
     networks:
       - BIG-dataplatform-network
 
 
   asterix_nc2:
     image: mp4sini/asterixdb:latest
-    volumes:
-      - /home/mpasini/asterix_conf_files/:/workspace/asterixdb/asterixdb/asterix-server/target/asterix-server-0.9.10-SNAPSHOT-binary-assembly/apache-asterixdb-0.9.10-SNAPSHOT/opt/local/conf
     command:
         - /bin/bash
         - -c
