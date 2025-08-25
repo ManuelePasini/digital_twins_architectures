@@ -12,10 +12,8 @@ services:
         - /bin/bash
         - -c
         - |
-          tail -f /dev/null
-          #sleep 40
-          #bin/asterixcc -config-file /workspace/asterixdb/asterixdb/asterix-server/target/asterix-server-0.9.10-SNAPSHOT-binary-assembly/apache-asterixdb-0.9.10-SNAPSHOT/opt/local/conf/cc.conf > cc.log 2>&1 &
-          # tail -f cc.log
+          sleep 40
+          bin/asterixcc -config-file /workspace/asterixdb/asterixdb/asterix-server/target/asterix-server-0.9.10-SNAPSHOT-binary-assembly/apache-asterixdb-0.9.10-SNAPSHOT/opt/local/conf/cc.conf > cc.log 2>&1 &
     deploy:
       placement:
         constraints:

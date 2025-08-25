@@ -1,0 +1,21 @@
+version: "3.9"
+services:
+  dtgraph:
+    image: mp4sini/dtgraph
+    hostname: dtgraph
+    container_name: dtgraph
+    volumes:
+      - "./results:/dt_graph/results"
+      - "./logs:/dt_graph/logs"
+    env_file: .env
+    depends_on:
+      - asterixdb
+    command:
+      - /bin/bash
+      - -c
+      - |
+        ./wait-for-it.sh asterixdb:19006 -t 90 -- echo "AsterixDB running, starting to ingest data..."
+        chmod +x scripts/download_dataset.sh
+        chmod +x scripts/run_smartbench_evaluation.sh
+        ./scripts/download_dataset.sh
+        ./scripts/run_smartbench_evaluation.sh

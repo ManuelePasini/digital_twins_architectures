@@ -9,3 +9,6 @@ curl -O https://downloads.apache.org/asterixdb/asterixdb-0.9.9/asterix-server-0.
 apt install unzip
 unzip asterix-server-0.9.9-binary-assembly.zip &&
   rm asterix-server-0.9.9-binary-assembly.zip
+
+sudo apt install openjdk-21-jdk -y
+sudo update-alternatives --config java

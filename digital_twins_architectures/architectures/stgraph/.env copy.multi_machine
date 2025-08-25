@@ -1,0 +1,11 @@
+# AsterixDB cluster configuration
+ASTERIXDB_CC_HOST=192.168.1.1
+DEFAULT_NC_POOL=192.168.30.102,192.168.30.103
+# Dataset and experiment configuration
+DATASET=smartbench
+DATASET_SIZE=small,large
+# Experiment configuration
+THREAD=1,2,3
+INGESTION_ITERATIONS=3
+QUERY_ITERATIONS=20
+RESOURCES_PATH=/home/mpasini/smartbench
