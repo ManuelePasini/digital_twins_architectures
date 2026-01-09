@@ -59,4 +59,4 @@ def get_mapping_function(entity):
 
 
 def extract_location(device):
-    return device["location"] if device["location"] is not None else "POINT EMPTY"
+    return device["location"] if "location" in device else "POINT EMPTY"

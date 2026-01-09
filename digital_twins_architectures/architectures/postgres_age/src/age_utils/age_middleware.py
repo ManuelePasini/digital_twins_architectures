@@ -119,7 +119,7 @@ class Timescale_Age_Postgis_Middleware:
         if isinstance(property_value, int):
             return False
         elif isinstance(property_value, str):
-            return id_regex in property_value
+            return property_value.startswith(id_regex)
         if isinstance(property_value, list):
             return all([self.__is_FIWARE_id(prop) for prop in property_value])
 
@@ -201,7 +201,7 @@ class Timescale_Age_Postgis_Middleware:
                 ]
             )
         elif isinstance(dest_id, list):
-            creation_result = creation_result and all(
+            creation_result = all(
                 [
                     self.create_edges(graph, source_id, edge_label, dest)
                     for dest in dest_id
@@ -325,14 +325,14 @@ class Timescale_Age_Postgis_Middleware:
         return all(new_edges)
 
     def update_graph(self, graph, measurement):
-        device_id = measurement["id"]
-        device_type = measurement["type"]
+        entity_id = measurement["id"]
+        entity_type = measurement["type"]
         # If it's already present
-        if not self.check_if_node_exists(graph, device_type, device_id):
-            return self.insert_custom_vertex(graph, device_type, measurement)
+        if not self.check_if_node_exists(graph, entity_type, entity_id):
+            return self.insert_custom_vertex(graph, entity_type, measurement)
         else:
             return True
-            # return self.update_node(graph, device_type, device_id, measurement)
+            # return self.update_node(graph, entity_type, entity_id, measurement)
 
     def historicize_measurement(self, hypertable, row):
         row[0] = f"to_timestamp({self.__convert_to_seconds(row[0])})"
@@ -352,7 +352,7 @@ class Timescale_Age_Postgis_Middleware:
                     [
                         row["timestamp"],
                         row["device_id"],
-                        row["controlledProperty"],
+                        row["controlled_property"],
                         row["location"],
                         (
                             row["value"]
@@ -388,9 +388,8 @@ class Timescale_Age_Postgis_Middleware:
                             subdevice["dateObserved"] = entity["dateObserved"]
                         self.upload_measurement(
                             measurement_table,
-                            extract_measurement_func(entity, measurement_schema),
+                            extract_measurement_func(subdevice, measurement_schema),
                         )
-
                 else:
                     return self.upload_measurement(
                         measurement_table,
