@@ -4,10 +4,11 @@ services:
     image: mp4sini/aeong:latest
     tty: true
     stdin_open: true
+    env_file: .env
     volumes:
       - ./query_results:/home/AeonG/tests/results/query_results
     command:
       - /bin/bash
       - -c
       - |
-        tail -f /dev/null
+        ./test/experiments/t_smarbench_test.sh

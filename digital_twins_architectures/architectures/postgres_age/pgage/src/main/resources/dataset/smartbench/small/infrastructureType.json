@@ -1,0 +1,18 @@
+[
+{"id": "office", "name": "Office Type", "description": "Office Description", "type": "InfrastructureType"},
+{"id": "class_room", "name": "Class Rooms", "description": "Class Room Description", "type": "InfrastructureType"},
+{"id": "utilities", "name": "Utility Rooms", "description": "Utility Room Description", "type": "InfrastructureType"},
+{"id": "corridor", "name": "Corridors", "description": "Corridor Description", "type": "InfrastructureType"},
+{"id": "seminar_room", "name": "Seminar Rooms", "description": "Seminar Room Description", "type": "InfrastructureType"},
+{"id": "lab", "name": "Labs", "description": "Lab Description", "type": "InfrastructureType"},
+{"id": "reception", "name": "reception", "description": "Reception Description", "type": "InfrastructureType"},
+{"id": "mail_room", "name": "Mail Rooms", "description": "Mail Room Description", "type": "InfrastructureType"},
+{"id": "work_room", "name": "WOrk Rooms", "description": "Works Room Description", "type": "InfrastructureType"},
+{"id": "conference_room", "name": "Conference Rooms", "description": "Conference Room Description", "type": "InfrastructureType"},
+{"id": "meeting_room", "name": "Meeting Rooms", "description": "Meeting Room Description", "type": "InfrastructureType"},
+{"id": "male_restroom", "name": "Male Restrooms", "description": "Male Restroom Description", "type": "InfrastructureType"},
+{"id": "female_restroom", "name": "Female Restroom", "description": "Female Restroom Description", "type": "InfrastructureType"},
+{"id": "facility_room", "name": "Facility Rooms", "description": "Facility Room Description", "type": "InfrastructureType"},
+{"id": "elevator", "name": "Elevators", "description": "Elevators Description", "type": "InfrastructureType"},
+{"id": "kitchen", "name": "Kitchen", "description": "Kitchen Description", "type": "InfrastructureType"}
+]

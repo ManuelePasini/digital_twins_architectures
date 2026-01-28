@@ -33,7 +33,7 @@ WORKDIR /home/AeonG/build/tests/mgbench
 RUN source /opt/toolchain-v4/activate && \
     make
 
-WORKDIR /home/AeonG/
+WORKDIR /home/AeonG/tests/experiments
 
 RUN pip3 install numpy
 RUN pip3 install pandas

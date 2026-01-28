@@ -1,0 +1,83 @@
+  {
+    "Infrastructure": {
+      "oid": 3042,
+      "label": "Infrastructure",
+      "properties": {
+        "static": {
+          "name": "(3042 (Last updated: None)",
+          "floor": "(3 (Last updated: None)",
+          "id": "(3042 (Last updated: None)",
+          "location": "(LINESTRING(12 0 0, 16 6 0) (Last updated: None)",
+          "type": "(Infrastructure (Last updated: None)"
+        },
+        "temporal": {}
+      },
+      "label": "Infrastructure",
+      "membership": null,
+      "start_time": "2010-01-01T00:00:00",
+      "end_time": "2100-12-31T23:59:59"
+    },
+    "Sensor": {
+      "oid": "38c21e1f_84ed_4e00_a0d0_4427a78029cd",
+      "label": "Sensor",
+      "properties": {
+        "static": {
+          "id": "(38c21e1f_84ed_4e00_a0d0_4427a78029cd (Last updated: None)",
+          "name": "(simSensor12 (Last updated: None)",
+          "sensorConfig": "({\"protocol\":\"udmp\",\"collectionTime\":5} (Last updated: None)",
+          "type": "(Sensor (Last updated: None)"
+        },
+        "temporal": {}
+      },
+      "label": "Sensor",
+      "membership": null,
+      "start_time": "2010-01-01T00:00:00",
+      "end_time": "2100-12-31T23:59:59"
+    },
+    "Temperature": {
+      "oid": "12baf06e-fc4b-4440-87b7-b072d56aaf75",
+      "label": "Temperature",
+      "properties": {
+        "static": {
+          "id": "(12baf06e-fc4b-4440-87b7-b072d56aaf75 (Last updated: None)",
+          "timestamp": "(2017-11-08T00:00:00.000 (Last updated: None)",
+          "payload": "({'temperature': 40} (Last updated: None)",
+          "type": "(Temperature (Last updated: None)",
+          "location": "(POINT(76 17 0) (Last updated: None)"
+        },
+        "temporal": {
+          "Temperature": "TimeSeries ID:  (TimeSeries ID=2fbb7a2a-2530-4b47-99ed-405b83688737, First value: (2017-11-08T00:00:00.000000000, [40]), Last value: (2018-02-05T23:55:00.000000000, [24])"
+        }
+      },
+      "label": "Temperature",
+      "membership": null,
+      "start_time": "2010-01-01T00:00:00",
+      "end_time": "2100-12-31T23:59:59"
+    },
+    "hasCoverage": {
+      "oid": 4934,
+      "label": "hasCoverage",
+      "properties": {
+        "static": {},
+        "temporal": {}
+      },
+      "source": "f6f0c157_8d68_4956_8e63_646dc353611a",
+      "target": 2081,
+      "membership": null,
+      "start_time": "2010-01-01T00:00:00",
+      "end_time": "2100-12-31T23:59:59"
+    },
+    "hasTemperature": {
+      "oid": 4721,
+      "label": "hasTemperature",
+      "properties": {
+        "static": {},
+        "temporal": {}
+      },
+      "source": "thermometer1",
+      "target": "12baf06e-fc4b-4440-87b7-b072d56aaf75",
+      "membership": null,
+      "start_time": "2010-01-01T00:00:00",
+      "end_time": "2100-12-31T23:59:59"
+    }
+  }

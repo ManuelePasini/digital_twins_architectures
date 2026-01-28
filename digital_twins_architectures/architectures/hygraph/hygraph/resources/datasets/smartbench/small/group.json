@@ -1,0 +1,7 @@
+[
+{"id": "ISG", "name": "ISG", "description": "Information Systems Group", "type": "Group"},
+{"id": "CMU", "name": "CMU", "description": "CMU Privacy Group", "type": "Group"},
+{"id": "Compilers", "name": "Compilers", "description": "Compliers Group", "type": "Group"},
+{"id": "TOC", "name": "TOC", "description": "Theoretical CS Group", "type": "Group"},
+{"id": "AI", "name": "AI", "description": "AI Research Group", "type": "Group"}
+]

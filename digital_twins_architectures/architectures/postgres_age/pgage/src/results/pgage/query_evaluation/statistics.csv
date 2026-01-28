@@ -1,0 +1,13 @@
+test_id,model,dataset,datasetSize,threads,queryName,queryType,elapsedTime,numEntities,numMachines,querySelectivity,temporalRangeIndex,iteration
+24a43d8d-e507-43b9-b9f1-2d94e7b137e0,PGAge,smartbench,small,1,EnvironmentCoverage,edgesDirection,17.26,10,1,increased,0,0
+b4da718d-ba1d-4c57-bca5-46edca7441b6,PGAge,smartbench,small,1,EnvironmentAggregate,edgesDirection,464.75,100,1,increased,0,0
+de95569f-0a85-4dcf-8fe7-edf832a636c2,PGAge,smartbench,small,1,MaintenanceOwners,edgesDirection,1111.04,100,1,increased,0,0
+066a994c-85c7-46c8-b852-b12be8aaacd2,PGAge,smartbench,small,1,EnvironmentOutlier,edgesDirection,57891.14,4,1,increased,0,0
+11089e3b-ed3d-432e-bbed-e41052029456,PGAge,smartbench,small,1,AgentOutlier,edgesDirection,1306.12,100,1,increased,0,0
+218cd2dc-b3fe-4418-8907-09cff306c084,PGAge,smartbench,small,1,AgentHistory,edgesDirection,224.65,1,1,increased,0,0
+b07c0ddc-bb61-401b-a329-e39e3c09cb40,PGAge,smartbench,small,1,EnvironmentCoverage,edgesDirection,5.48,2,1,increased,0,0
+cb062668-1100-45c1-809d-aaede02f78e2,PGAge,smartbench,small,1,EnvironmentAggregate,edgesDirection,708.81,27,1,increased,0,0
+1c90e95a-deea-4380-8763-71587eb5dbcc,PGAge,smartbench,small,1,MaintenanceOwners,edgesDirection,2591.92,27,1,increased,0,0
+18f0e38f-c1b8-4cd1-b27f-86c827f6b452,PGAge,smartbench,small,1,EnvironmentOutlier,edgesDirection,5556.93,2,1,increased,0,0
+0af99752-91cf-4b76-9479-2a8ca02aec9c,PGAge,smartbench,small,1,AgentOutlier,edgesDirection,2180.72,27,1,increased,0,0
+d7b45baa-c70f-44ed-b4a6-42c4682157c1,PGAge,smartbench,small,1,AgentHistory,edgesDirection,2.47,0,1,increased,0,0

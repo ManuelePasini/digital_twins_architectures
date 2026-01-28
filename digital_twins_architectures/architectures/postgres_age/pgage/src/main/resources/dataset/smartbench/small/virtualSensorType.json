@@ -1,0 +1,5 @@
+[
+{"id": "WiFiToPresence", "name": "WiFiToPresence", "description": " WIfi To Presence type", "inputType": {"id": "WiFiAP"}, "semanticObservationType": {"id": "presence"}, "type": "VirtualSensorType"},
+{"id": "WemoToPresence", "name": "WemoToPresence", "description": " Wemo To Presence type", "inputType": {"id": "WeMo"}, "semanticObservationType": {"id": "presence"}, "type": "VirtualSensorType"},
+{"id": "WiFiToOccupancy", "name": "WiFiToOccupancy", "description": " WIfi To Occupancy type", "inputType": {"id": "WiFiAP"}, "semanticObservationType": {"id": "occupancy"}, "type": "VirtualSensorType"}
+]

@@ -1,0 +1,20 @@
+WITH env_device AS (
+    SELECT *
+    FROM cypher(
+        'smartbench_graph', $$
+            MATCH (tempe:Temperature)-[:hasTemperature]-(device:Sensor)-[:hasCoverage]-(environment:Infrastructure)
+            RETURN DISTINCT environment.id AS environment_id,
+                            device.id AS device_id
+        $$) AS (environment_id text, device_id text)
+)
+SELECT
+    env_device.environment_id,
+    env_device.device_id,
+    AVG(public.measurements.val) AS avg_temperature
+FROM env_device
+JOIN public.measurements
+    ON public.measurements.sensor_id = env_device.device_id
+WHERE public.measurements.time
+		 BETWEEN to_timestamp({TSTAMPFROM_PARAM} / 1000.0)
+          AND to_timestamp({TSTAMPTO_PARAM} / 1000.0)
+GROUP BY env_device.environment_id, env_device.device_id;

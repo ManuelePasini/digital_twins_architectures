@@ -2,6 +2,7 @@
 credentials.yml
 pg_data
 query_results/
+digital_twins_architectures/architectures/hygraph/hygraph/resources/datasets
 # Created by https://www.gitignore.io/api/java,linux,macos,gradle,windows,eclipse,intellij
 # Edit at https://www.gitignore.io/?templates=java,linux,macos,gradle,windows,eclipse,intellij
 

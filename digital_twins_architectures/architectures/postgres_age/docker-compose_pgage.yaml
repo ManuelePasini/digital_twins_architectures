@@ -1,0 +1,22 @@
+version: "3.9"
+services:
+  pgage:
+    image: mp4sini/pgage:latest
+    hostname: pgage
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: psw
+      POSTGRES_DB: smartbench_eval
+    container_name: pgage
+    ports:
+      - 5432:5432
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_USER}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PSW}
+    env_file: .env
+    ports:
+      - "${PGADMIN_PORT_EXT}:80"

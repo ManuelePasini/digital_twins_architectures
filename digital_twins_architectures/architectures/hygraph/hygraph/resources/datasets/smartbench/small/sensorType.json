@@ -1,0 +1,8 @@
+[
+{"description": "WiFi Access Point Sensors", "mobility": "FIX", "captureFunctionality": "PUSH", "id": "WiFiAP", "payloadSchema": "[{\"clientId\": \"STRING\"}]", "name": "WiFiAP", "type": "SensorType"},
+{"description": "WeMo Sensors", "mobility": "FIX", "captureFunctionality": "PUSH", "id": "WeMo", "payloadSchema": "[{\"currentMilliWatts\": \"INTEGER\"}, {\"onTodaySeconds\": \"INTEGER\"}]", "name": "WeMo", "type": "SensorType"},
+{"description": "Thermometer Sensors", "mobility": "FIX", "captureFunctionality": "PUSH", "id": "Thermometer", "payloadSchema": "[{\"temperature\": \"INTEGER\"}]", "name": "Thermometer", "type": "SensorType"},
+{"description": "Beacon Sensors", "mobility": "FIX", "captureFunctionality": "PUSH", "id": "Beacon", "payloadSchema": "[{\"reading\": \"INTEGER\"}]", "name": "Beacon", "type": "SensorType"},
+{"description": "Energy Meter Sensors", "mobility": "FIX", "captureFunctionality": "PUSH", "id": "EnergyMeter", "payloadSchema": "[{\"temperature\": \"INTEGER\"}]", "name": "EnergyMeter", "type": "SensorType"},
+{"description": "Camera Sensors", "mobility": "FIX", "captureFunctionality": "PUSH", "id": "Camera", "payloadSchema": "[{\"reading\": \"INTEGER\"}]", "name": "Camera", "type": "SensorType"}
+]

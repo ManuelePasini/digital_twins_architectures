@@ -25,7 +25,7 @@ services:
     ports:
       - "45050:80"
     deploy:
-      placement:
+      placement:cd
         constraints:
           - node.hostname == isi-bigcluster-pnnr-11
 

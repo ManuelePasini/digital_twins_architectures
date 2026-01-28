@@ -1,0 +1,5 @@
+[
+{"id": "pt1", "name": "Mobile Phone", "description": "Mobile Phone Devices", "type": "PlatformType"},
+{"id": "pt2", "name": "Raspberry Pi", "description": "Raspberry Pi Devices", "type": "PlatformType"},
+{"id": "pt3", "name": "Laptop", "description": "Laptop Devices", "type": "PlatformType"}
+]
