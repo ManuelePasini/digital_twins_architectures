@@ -8,15 +8,17 @@ import utils
 import uuid
 import pandas as pd
 
+
 def run_query(driver, query):
-        start = time.time()
-        results, summary, keys = driver.execute_query(query)
-        end = time.time()
+    start = time.time()
+    results, summary, keys = driver.execute_query(query)
+    end = time.time()
 
-        logger.info(f"Elapsed time: {end - start:.3f} seconds")
-        logger.info(f"Records retrieved: {len(results)}")
+    logger.info(f"Elapsed time: {end - start:.3f} seconds")
+    logger.info(f"Records retrieved: {len(results)}")
 
-        return start, end, end - start, len(results)
+    return start, end, end - start, len(results)
+
 
 # Cambia questi valori con quelli del tuo Neo4j locale
 NEO4J_URI = "neo4j://localhost:7687"
@@ -33,7 +35,9 @@ QUERY_SELECTIVITY = os.getenv("QUERY_SELECTIVITY", "increased")
 RESOURCES_PATH = Path("/") / "neo4j" / "neo4j" / "resources"
 QUERIES_PATH = RESOURCES_PATH / "queries"
 CONSTRAINTS_FILE = QUERIES_PATH / "time_constraints.yaml"
-RESULTS_DIR = Path("/") / "neo4j" / "neo4j" / "results" / "neo4j" / "query_evaluation"
+RESULTS_DIR = (
+    Path("/") / "neo4j" / "neo4j" / "test" / "results" / "neo4j" / "query_evaluation"
+)
 
 
 QUERY_LIST = [
@@ -47,6 +51,7 @@ QUERY_LIST = [
 
 logger = utils.setup_logger("NEO4J_SmartBench_QueryEvaluation")
 
+
 # --- RESOURCE LOADING ---
 def get_temporal_constraints(yaml_path):
     """
@@ -59,6 +64,7 @@ def get_temporal_constraints(yaml_path):
     except (FileNotFoundError, KeyError) as e:
         logger.error(f"Critical error loading YAML constraints: {e}")
         sys.exit(1)
+
 
 TIME_CONSTRAINTS = get_temporal_constraints(CONSTRAINTS_FILE)
 driver = GraphDatabase.driver(
@@ -79,9 +85,7 @@ for iteration in range(ITERATIONS):
         logger.info(f"Executing Query: {query_name}")
 
         # Retrieve constraints for the specific query and dataset size
-        query_constraints = TIME_CONSTRAINTS.get(query_name, {}).get(
-            DATASET_SIZE, []
-        )
+        query_constraints = TIME_CONSTRAINTS.get(query_name, {}).get(DATASET_SIZE, [])
 
         # Load SQL/Cypher query template from text file
         query_file = QUERIES_PATH / f"{query_name}.txt"

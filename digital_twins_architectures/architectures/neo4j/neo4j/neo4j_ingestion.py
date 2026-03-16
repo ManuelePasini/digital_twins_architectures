@@ -167,7 +167,7 @@ def main():
         logger.info(f"Done {GRAPH_FILE} in {graph_elapsed:.3f}s")
 
         logger.info(f"Ingesting timeseries...")
-        if DATASET_SIZE != "big" or DATASET_SIZE == "large":
+        if DATASET_SIZE == "small":
             _, ts_end, ts_elapsed = ingest_cypher_file_full(TIMESERIES_FILE)
         else:
             ts_elapsed = 0
